@@ -1,4 +1,6 @@
 import { HealEffectDefs } from "./healEffectDefs.ts";
+import { PassDefs } from "./passDefs.ts";
+import { CrosshairDefs } from "./crosshairDefs.ts";
 
 const _allowedHealEffects = Object.keys(HealEffectDefs);
 const _allowedMeleeSkins = [
@@ -21,6 +23,44 @@ const _allowedOutfits = [
     "outfitDev",
     "outfitGD",
     "outfitMod",
+    "outfitWheat",
+    "outfitNoir",
+    "outfitRedLeaderAged",
+    "outfitBlueLeaderAged",
+    "outfitSpetsnaz",
+    "outfitWoodsCloak",
+    "outfitElf",
+    "outfitImperial",
+    "outfitLumber",
+    "outfitVerde",
+    "outfitPineapple",
+    "outfitTarkhany",
+    "outfitWaterElem",
+    "outfitHeaven",
+    "outfitMeteor",
+    "outfitIslander",
+    "outfitAqua",
+    "outfitCoral",
+    "outfitKhaki",
+    "outfitParma",
+    "outfitParmaPrestige",
+    "outfitCasanova",
+    "outfitPrisoner",
+    "outfitJester",
+    "outfitWoodland",
+    "outfitRoyalFortune",
+    "outfitKeyLime",
+    "outfitCobaltShell",
+    "outfitCarbonFiber",
+    "outfitDarkGloves",
+    "outfitDesertCamo",
+    "outfitCamo",
+    "outfitRed",
+    "outfitWhite",
+];
+const _playeroutfits = [
+    "outfitBase",
+    "outfitTurkey",
     "outfitWheat",
     "outfitNoir",
     "outfitRedLeaderAged",
@@ -210,7 +250,7 @@ export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
         type: "unlock",
         name: "standard-issue",
         unlocks: [
-            "outfitBase",
+            /*"outfitBase",
             "fists",
             "heal_basic",
             "boost_basic",
@@ -373,17 +413,16 @@ export const UnlockDefs: Record<UnlockDefKey, UnlockDef> = {
             "emote_flaglibya",
             "emote_flagbosnia",
             "emote_logocloud",
-            "emote_logotwins",
-            /* use this to unlock everything :)
+            "emote_logotwins", */
+            /* use this to unlock everything :) */
             ...new Set([
-                ...allowedOutfits,
-                ...allowedMeleeSkins,
-                ...allowedEmotes,
-                ...allowedHealEffects,
+                ..._allowedOutfits,
+                ..._allowedMeleeSkins,
+                ..._allowedEmotes,
+                ..._allowedHealEffects,
                 ...Object.keys(CrosshairDefs),
                 ...PassDefs.pass_survivr1.items.map((item) => item.item),
             ]),
-            */
         ],
     },
     unlock_new_account: {

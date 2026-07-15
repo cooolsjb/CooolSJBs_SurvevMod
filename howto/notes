@@ -1,0 +1,4 @@
+"pnpm dev" to start server
+"pnpm survev-setup" does some random stuff
+to change map/gamemode go to config.ts
+change default gear go to unlockDefs.ts
