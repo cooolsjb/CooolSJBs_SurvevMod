@@ -65,6 +65,33 @@ const BaseDefs: Record<string, OutfitDef> = {
             pickup: "clothes_pickup_01",
         },
     },
+    outfitJelly: {
+        noDropOnDeath: true,
+        name: "Jelly",
+        rarity: Rarity.Mythic,
+        type: "outfit",
+        lore: "squishy lol",
+        skinImg: {
+            baseTint: 0x808080,
+            baseSprite: "player-base-01.img",
+            handTint: 0x808080,
+            handSprite: "player-hands-01.img",
+            footTint: 0x808080,
+            footSprite: "player-feet-01.img",
+            backpackTint: 0x808080,
+            backpackSprite: "player-circle-base-01.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-01.img",
+            tint: 0x808080,
+            border: "loot-circle-outer-01.img",
+            borderTint: 0,
+            scale: 0.2,
+        },
+        sound: {
+            pickup: "clothes_pickup_01",
+        },
+    },
 };
 
 const SkinDefs: Record<string, OutfitDef> = {
@@ -77,6 +104,26 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-shirt-outfitBase.img",
             tint: 0xffffff,
         },
+    }),
+    outfitJelly1: defineOutfitSkin("outfitJelly", {
+        name: "Jelly",
+        lore: "squishy lol",
+        rarity: Rarity.Uncommon,
+        skinImg: {
+            baseTint: 0xc76a67,
+            baseSprite: "player-base-02.img",
+            handTint: 0xb5504d,
+            handSprite: "player-hands-02.img",
+            footTint: 0xb5504d,
+            footSprite: "player-feet-02.img",
+            backpackTint: 0x9e3734,
+            backpackSprite: "player-circle-base-02.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-01.img",
+            tint: 0xffffff,
+        },
+        teamId: 1,
     }),
     outfitDemo: defineOutfitSkin("outfitBase", {
         noDrop: true,
