@@ -73,17 +73,17 @@ const BaseDefs: Record<string, OutfitDef> = {
         lore: "squishy lol",
         skinImg: {
             baseTint: 0x808080,
-            baseSprite: "player-base-01.img",
+            baseSprite: "player-base-outfitJelly.img",
             handTint: 0x808080,
-            handSprite: "player-hands-01.img",
+            handSprite: "player-hands-outfitJelly.img",
             footTint: 0x808080,
-            footSprite: "player-feet-01.img",
+            footSprite: "player-feet-outfitJelly.img",
             backpackTint: 0x808080,
-            backpackSprite: "player-circle-base-01.img",
+            backpackSprite: "player-circle-base-outfitJelly.img",
         },
         lootImg: {
             sprite: "loot-shirt-01.img",
-            tint: 0x808080,
+            tint: 0xffffff,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
             scale: 0.2,
@@ -106,9 +106,9 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
     }),
     outfitJellyPink: defineOutfitSkin("outfitJelly", {
-        name: "Jelly",
+        name: "Jelly Pink",
         lore: "squishy lol",
-        rarity: Rarity.Uncommon,
+        rarity: Rarity.Mythic,
         skinImg: {
             baseTint: 0xdf6da9,
             baseSprite: "player-base-outfitJelly.img",
@@ -121,9 +121,8 @@ const SkinDefs: Record<string, OutfitDef> = {
         },
         lootImg: {
             sprite: "loot-shirt-outfitJellyPink.img",
-            tint: 0,
+            tint: 0xffffff,
         },
-        teamId: 1,
     }),
     outfitDemo: defineOutfitSkin("outfitBase", {
         noDrop: true,

@@ -32,7 +32,7 @@
        inkscape:collect="always"
        id="linearGradient821">
       <stop
-         style="stop-color:#f2f2f2;stop-opacity:1;"
+         style="stop-color:#f7f7f7;stop-opacity:1;"
          offset="0"
          id="stop817" />
       <stop
@@ -64,9 +64,9 @@
      inkscape:window-height="1017"
      id="namedview6"
      showgrid="false"
-     inkscape:zoom="5.8214286"
-     inkscape:cx="70"
-     inkscape:cy="70"
+     inkscape:zoom="4.1163716"
+     inkscape:cx="10.081694"
+     inkscape:cy="71.786521"
      inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
@@ -88,19 +88,11 @@
      cy="-82.698349"
      cx="54.415222" />
   <ellipse
-     style="fill:#ffffff;fill-opacity:0.95;stroke-width:0.99937"
+     style="fill:#ffffff;fill-opacity:1;stroke-width:0.940485"
      id="path1"
-     cx="-82.77449"
-     cy="59.051315"
-     rx="21.154894"
-     ry="8.9801207"
-     transform="matrix(-0.78598691,-0.61824314,-0.37519362,0.92694646,0,0)" />
-  <ellipse
-     style="fill:#ffffff;fill-opacity:0.95;stroke-width:0.6227"
-     id="path2"
-     cx="-46.030815"
-     cy="74.867233"
-     rx="4.9290552"
-     ry="3.1902571"
-     transform="matrix(-0.9572759,-0.28917615,-0.28917615,0.9572759,0,0)" />
+     cx="33.873394"
+     cy="54.44149"
+     rx="20.444191"
+     ry="12.768684"
+     transform="matrix(0.8603582,-0.50968988,0.29200405,0.95641708,0,0)" />
 </svg>
