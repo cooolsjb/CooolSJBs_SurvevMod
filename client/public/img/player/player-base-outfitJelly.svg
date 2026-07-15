@@ -1,19 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" standalone="no"?>
 <svg
-   xmlns:dc="http://purl.org/dc/elements/1.1/"
-   xmlns:cc="http://creativecommons.org/ns#"
-   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
-   xmlns:svg="http://www.w3.org/2000/svg"
-   xmlns="http://www.w3.org/2000/svg"
-   xmlns:xlink="http://www.w3.org/1999/xlink"
-   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
-   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    width="140"
    height="140"
    version="1.1"
    id="svg4"
-   sodipodi:docname="player-base-02.svg"
-   inkscape:version="0.92.2 (5c3e80d, 2017-08-06)">
+   sodipodi:docname="player-base-outfitJelly.svg"
+   inkscape:version="1.4.3 (0d15f75, 2025-12-25)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:xlink="http://www.w3.org/1999/xlink"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
   <metadata
      id="metadata10">
     <rdf:RDF>
@@ -32,11 +32,11 @@
        inkscape:collect="always"
        id="linearGradient821">
       <stop
-         style="stop-color:#ffffff;stop-opacity:1"
+         style="stop-color:#f2f2f2;stop-opacity:1;"
          offset="0"
          id="stop817" />
       <stop
-         style="stop-color:#858585;stop-opacity:1"
+         style="stop-color:#b2b2b2;stop-opacity:1;"
          offset="1"
          id="stop819" />
     </linearGradient>
@@ -49,7 +49,7 @@
        x2="-2.0108132"
        y2="50.500107"
        gradientUnits="userSpaceOnUse"
-       gradientTransform="matrix(2,0,0,2,-17.049445,-128.51142)" />
+       gradientTransform="matrix(2,0,0,2,120.06385,-156.79497)" />
   </defs>
   <sodipodi:namedview
      pagecolor="#ffffff"
@@ -64,24 +64,43 @@
      inkscape:window-height="1017"
      id="namedview6"
      showgrid="false"
-     inkscape:zoom="2.285989"
-     inkscape:cx="82.55895"
-     inkscape:cy="104.32192"
-     inkscape:window-x="1912"
+     inkscape:zoom="5.8214286"
+     inkscape:cx="70"
+     inkscape:cy="70"
+     inkscape:window-x="-8"
      inkscape:window-y="-8"
      inkscape:window-maximized="1"
      inkscape:current-layer="svg4"
      fit-margin-top="3.5"
      fit-margin-bottom="3.5"
      fit-margin-left="3.5"
-     fit-margin-right="3.5" />
+     fit-margin-right="3.5"
+     inkscape:showpageshadow="2"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1" />
   <ellipse
-     transform="matrix(-0.97938026,-0.20202549,0.2020205,-0.97938129,0,0)"
+     transform="matrix(0.97938026,-0.20202549,-0.2020205,-0.97938129,0,0)"
      stroke-miterlimit="10"
      id="ellipse2"
-     style="fill:url(#linearGradient825);fill-opacity:1;stroke:none;stroke-width:6.00109148;stroke-miterlimit:10;stroke-opacity:0.769"
+     style="fill:url(#linearGradient825);fill-opacity:1;stroke:none;stroke-width:6.00109;stroke-miterlimit:10;stroke-opacity:0.769"
      ry="66.499977"
      rx="66.500023"
-     cy="-54.414799"
-     cx="-82.698074" />
+     cy="-82.698349"
+     cx="54.415222" />
+  <ellipse
+     style="fill:#ffffff;fill-opacity:0.95;stroke-width:0.99937"
+     id="path1"
+     cx="-82.77449"
+     cy="59.051315"
+     rx="21.154894"
+     ry="8.9801207"
+     transform="matrix(-0.78598691,-0.61824314,-0.37519362,0.92694646,0,0)" />
+  <ellipse
+     style="fill:#ffffff;fill-opacity:0.95;stroke-width:0.6227"
+     id="path2"
+     cx="-46.030815"
+     cy="74.867233"
+     rx="4.9290552"
+     ry="3.1902571"
+     transform="matrix(-0.9572759,-0.28917615,-0.28917615,0.9572759,0,0)" />
 </svg>

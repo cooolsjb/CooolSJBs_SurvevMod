@@ -458,7 +458,7 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-shirt-outfitEvent.svg",
         "loot/loot-shirt-outfitGD.svg",
         "loot/loot-shirt-outfitHeaven.svg",
-        /*"loot/loot-shirt-outfitJelly.svg",*/
+        "loot/loot-shirt-outfitJellyPink.svg",
         "loot/loot-shirt-outfitKeyLime.svg",
         "loot/loot-shirt-outfitLumber.svg",
         "loot/loot-shirt-outfitMod.svg",
@@ -673,7 +673,7 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-base-outfitDC.svg",
         "player/player-base-outfitEvent.svg",
         "player/player-base-outfitHeaven.svg",
-        /*"player/player-base-outfitJelly.svg",*/
+        "player/player-base-outfitJelly.svg",
         "player/player-base-outfitLumber.svg",
         "player/player-base-outfitParmaPrestige.svg",
         "player/player-base-outfitParrotfish.svg",
@@ -685,13 +685,13 @@ export const LoadoutAtlas: AtlasDef = {
         "player/player-bullet-trail-03.svg",
         "player/player-circle-base-01.svg",
         "player/player-circle-base-02.svg",
-        /*"player/player-circle-outfitJelly.svg",*/
+        "player/player-circle-outfitJelly.svg",
         "player/player-feet-01.svg",
         "player/player-feet-02.svg",
-        /*"player/player-feet-outfitJelly.svg",*/
+        "player/player-feet-outfitJelly.svg",
         "player/player-hands-01.svg",
         "player/player-hands-02.svg",
-        /*"player/player-hands-outfitJelly.svg",*/
+        "player/player-hands-outfitJelly.svg",
         "player/player-hands-outfitSnow.svg",
         "player/player-mash-01.svg",
         "player/player-mash-02.svg",
