@@ -4,7 +4,7 @@ to change map/gamemode go to config.ts
 change default gear go to unlockDefs.ts and add your gears code-name (not in game name)
 
 making a skin:
-go to client\public\img, there you will find "loot" and "player" folders
+go to "client\public\img", there you will find "loot" and "player" folders
 if you want to make your own designs for a skin seen on the player (there are already some you can change the color of) there are 4 things you might want to make
     first, make a base
         you can copy any of the files titled "player-base-x" in the player img folder and edit them
@@ -13,3 +13,18 @@ if you want to make your own designs for a skin seen on the player (there are al
     next, feet or "player-feet-x"
     finally, hands (same sprite for both) as "player-hands-x"
 for the loot image, go to the loot folder, copy one of the "loot-shirt-x" and do the same as before
+you are now done with adding files
+
+now, you need to do 3 things
+    1:make a SkinDef (traits for a skin)
+        go to "shared\defs\gameObjects\outfitDefs.ts, find "const SkinDefs..."
+        copy a SkinDef that is relatively similar to what you want to make (you can figure out what each option does)
+        change what you want
+            tints are what color an image will become if you do one
+        if you want you can also make a BaseDef to make many of a similar skin
+    2:add your images to the atlas at "client\atlas-builder\defs\loadout.ts"
+        make them similar to the ones already there
+        your loot image will go with others and player images will go with others too
+    3:add your outfit to the lang json file(s) English is "\client\src\en.json"
+
+To unlock your skin as default, go to unlockDefs.ts and add it to the default unlock stuff

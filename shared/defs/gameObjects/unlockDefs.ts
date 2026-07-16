@@ -20,6 +20,10 @@ const _allowedMeleeSkins = [
 const _allowedOutfits = [
     "outfitBase",
     "outfitJellyPink",
+    "outfitJellyBlue",
+    "outfitJellyStealth",
+    "outfitJellyOrange",
+    "outfitJellyRed",
     "outfitTurkey",
     "outfitWheat",
     "outfitNoir",

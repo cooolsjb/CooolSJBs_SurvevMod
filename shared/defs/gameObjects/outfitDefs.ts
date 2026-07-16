@@ -70,7 +70,7 @@ const BaseDefs: Record<string, OutfitDef> = {
         name: "Jelly",
         rarity: Rarity.Mythic,
         type: "outfit",
-        lore: "squishy lol",
+        lore: "Squishy",
         skinImg: {
             baseTint: 0x808080,
             baseSprite: "player-base-outfitJelly.img",
@@ -107,7 +107,7 @@ const SkinDefs: Record<string, OutfitDef> = {
     }),
     outfitJellyPink: defineOutfitSkin("outfitJelly", {
         name: "Jelly Pink",
-        lore: "squishy lol",
+        lore: "Squishy",
         rarity: Rarity.Mythic,
         skinImg: {
             baseTint: 0xdf6da9,
@@ -123,6 +123,83 @@ const SkinDefs: Record<string, OutfitDef> = {
             sprite: "loot-shirt-outfitJellyPink.img",
             tint: 0xffffff,
         },
+    }),
+    outfitJellyBlue: defineOutfitSkin("outfitJelly", {
+        name: "Jelly Blue",
+        lore: "Squishy, reminds you of the ocean",
+        rarity: Rarity.Epic,
+        skinImg: {
+            baseTint: 0x526ee0,
+            baseSprite: "player-base-outfitJelly.img",
+            handTint: 0x1a43e5,
+            handSprite: "player-hands-outfitJelly.img",
+            footTint: 0x1a43e5,
+            footSprite: "player-feet-outfitJelly.img",
+            backpackTint: 0x1a43e5,
+            backpackSprite: "player-circle-outfitJelly.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitJellyBlue.img",
+            tint: 0xffffff,
+        },
+    }),
+    outfitJellyOrange: defineOutfitSkin("outfitJelly", {
+        name: "Jelly Orange",
+        lore: "Squishy, radiating with heat",
+        rarity: Rarity.Epic,
+        skinImg: {
+            baseTint: 0xff874c,
+            baseSprite: "player-base-outfitJelly.img",
+            handTint: 0xff7733,
+            handSprite: "player-hands-outfitJelly.img",
+            footTint: 0xff7733,
+            footSprite: "player-feet-outfitJelly.img",
+            backpackTint: 0xff7733,
+            backpackSprite: "player-circle-outfitJelly.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitJellyOrange.img",
+            tint: 0xffffff,
+        },
+    }),
+    outfitJellyRed: defineOutfitSkin("outfitJelly", {
+        name: "Jelly Red",
+        lore: "Squishy, bloodthirsty",
+        rarity: Rarity.Epic,
+        skinImg: {
+            baseTint: 0xf65656,
+            baseSprite: "player-base-outfitJelly.img",
+            handTint: 0xfa3838,
+            handSprite: "player-hands-outfitJelly.img",
+            footTint: 0xfa3838,
+            footSprite: "player-feet-outfitJelly.img",
+            backpackTint: 0xfa3838,
+            backpackSprite: "player-circle-outfitJelly.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitJellyRed.img",
+            tint: 0xffffff,
+        },
+    }),
+    outfitJellyStealth: defineOutfitSkin("outfitJelly", {
+        name: "Jelly Stealth",
+        lore: "Squishy, a little hard to see?",
+        rarity: Rarity.Mythic,
+        skinImg: {
+            baseTint: 0x80af49,
+            baseSprite: "player-base-outfitJelly.img",
+            handTint: 0xbfe791,
+            handSprite: "player-hands-outfitJelly.img",
+            footTint: 0xbfe791,
+            footSprite: "player-feet-outfitJelly.img",
+            backpackTint: 0xbfe791,
+            backpackSprite: "player-circle-outfitJelly.img",
+        },
+        lootImg: {
+            sprite: "loot-shirt-outfitJellyStealth.img",
+            tint: 0xffffff,
+        },
+        ghillie: true
     }),
     outfitDemo: defineOutfitSkin("outfitBase", {
         noDrop: true,
