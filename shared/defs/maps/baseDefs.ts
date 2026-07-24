@@ -775,6 +775,7 @@ export const Main: MapDef = {
         tier_dev_melee: [
             { name: "bowie_frontier", count: 1, weight: 1 },
             { name: "bowie_vintage", count: 1, weight: 1 },
+            { name: "bowie_blood", count: 1, weight: 1 },
             { name: "huntsman_burnished", count: 1, weight: 1 },
             { name: "huntsman_rugged", count: 1, weight: 1 },
             { name: "bayonet_woodland", count: 1, weight: 1 },

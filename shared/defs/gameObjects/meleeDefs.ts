@@ -1268,6 +1268,18 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-bowie-frontier.img",
         },
     }),
+    bowie_blood: defineMeleeSkin("bowie", {
+        name: "Bowie Bloodthirsty",
+        rarity: Rarity.Mythic,
+        lore: "Wants to win your heart... violently",
+        noPotatoSwap: false,
+        lootImg: {
+            sprite: "loot-melee-bowie-blood.img",
+        },
+        worldImg: {
+            sprite: "loot-melee-bowie-blood.img",
+        },
+    }),
     machete_taiga: defineMeleeSkin("machete", {
         name: "UVSR Taiga",
         noPotatoSwap: false,
@@ -1276,12 +1288,39 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-machete-taiga.img",
         },
     }),
+    machete_rust: defineMeleeSkin("machete", {
+        name: "UVSR Taiga",
+        autoAttack: true,
+        noPotatoSwap: false,
+        damage: 24,
+        attack: {
+            cooldownTime: 0.2
+        },
+        lootImg: { sprite: "loot-melee-machete-rust.img" },
+        worldImg: {
+            sprite: "loot-melee-machete-rust.img",
+        },
+    }),
     kukri_trad: defineMeleeSkin("machete", {
         name: "Tallow's Kukri",
         noPotatoSwap: false,
         lootImg: { sprite: "loot-melee-kukri-trad.img" },
         worldImg: {
             sprite: "loot-melee-kukri-trad.img",
+            pos: { x: -0.5, y: -46.5 },
+        },
+    }),
+    kukri_rust: defineMeleeSkin("machete", {
+        name: "Kukri Rust",
+        autoAttack: true,
+        noPotatoSwap: false,
+        damage: 24,
+        attack: {
+            cooldownTime: 0.2
+        },
+        lootImg: { sprite: "loot-melee-kukri-rust.img" },
+        worldImg: {
+            sprite: "loot-melee-kukri-rust.img",
             pos: { x: -0.5, y: -46.5 },
         },
     }),
