@@ -16,7 +16,13 @@ const _allowedMeleeSkins = [
     "huntsman_burnished",
     "bowie_vintage",
     "bowie_frontier",
-];
+    "bowie_blood",
+    "machete_rust",
+    "machete_taiga",
+    "kukri_rust",
+    "kukri_trad",
+    "katana",
+]
 const _allowedOutfits = [
     "outfitBase",
     "outfitJellyPink",
