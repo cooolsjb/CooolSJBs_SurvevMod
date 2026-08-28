@@ -1,19 +1,23 @@
 import { type ChildProcess, fork } from "node:child_process";
-import { randomUUID } from "node:crypto";
-import type { WebSocket } from "uWebSockets.js";
+import { randomBytes } from "node:crypto";
 import { type MapDefKey, MapDefs } from "../../../shared/defs/mapDefs.ts";
 import type { TeamMode } from "../../../shared/gameConfig.ts";
-import * as net from "../../../shared/net/net.ts";
 import { util } from "../../../shared/utils/util.ts";
+import { Config } from "../config.ts";
 import { ServerLogger } from "../utils/logger.ts";
-import { type FindGamePrivateBody, type ServerGameConfig } from "../utils/types.ts";
+import { type FindGamePrivateBody, type ServerGameConfig, type SpectateGamePrivateBody } from "../utils/types.ts";
+import type { SpectateTokenData } from "./game.ts";
 import { type GameData, type ProcessMsg, ProcessMsgType } from "./ipcTypes.ts";
 
 let procFile: string;
-if (process.env.NODE_ENV === "production") {
-    procFile = "dist/gameProcess.js";
-} else {
+let procArgv: string[];
+
+if (import.meta.filename.endsWith(".ts")) {
     procFile = "src/game/gameProcess.ts";
+    procArgv = ["--expose-gc", "--import", "tsx"];
+} else {
+    procArgv = [];
+    procFile = "dist/gameProcess.js";
 }
 
 export enum ProcState {
@@ -22,18 +26,20 @@ export enum ProcState {
     Running,
 }
 
-class GameProcess {
+export class GameProcess {
     process: ChildProcess;
+    port: number;
 
     gameData: GameData = {
         id: "",
         teamMode: 0 as TeamMode,
-        mapName: "",
+        mapName: "" as MapDefKey,
         canJoin: false,
         aliveCount: 0,
         startedTime: 0,
         stopped: false,
         timeRunning: 0,
+        livingPlayers: [],
     };
 
     state = ProcState.Idle;
@@ -51,10 +57,18 @@ class GameProcess {
 
     reusedCount = 0;
 
-    constructor(manager: GameProcessManager, id: string, config: ServerGameConfig) {
+    constructor(
+        manager: GameProcessManager,
+        id: string,
+        config: ServerGameConfig,
+        port: number,
+    ) {
         this.manager = manager;
-        this.process = fork(procFile, [], {
+        this.port = port;
+
+        this.process = fork(procFile, [port.toString()], {
             serialization: "advanced",
+            execArgv: procArgv,
         });
 
         this.process.on("message", (msg: ProcessMsg) => {
@@ -95,29 +109,6 @@ class GameProcess {
                     this.state = ProcState.Idle;
                 }
                 break;
-            case ProcessMsgType.ServerSocketMsg:
-                for (let i = 0; i < msg.msgs.length; i++) {
-                    const socketMsg = msg.msgs[i];
-                    const socket = this.manager.sockets.get(socketMsg.socketId);
-
-                    if (!socket) continue;
-                    if (socket.getUserData().closed) continue;
-                    socket.send(socketMsg.data, true, false);
-                }
-                break;
-            case ProcessMsgType.SocketClose:
-                const socket = this.manager.sockets.get(msg.socketId);
-                if (socket && !socket.getUserData().closed) {
-                    if (msg.reason) {
-                        const disconnectMsg = new net.DisconnectMsg();
-                        disconnectMsg.reason = msg.reason;
-                        const stream = new net.MsgStream(new ArrayBuffer(128));
-                        stream.serializeMsg(net.MsgType.Disconnect, disconnectMsg);
-                        socket.send(stream.getBuffer(), true, false);
-                    }
-                    socket.end();
-                }
-                break;
         }
     }
 
@@ -153,53 +144,31 @@ class GameProcess {
         this.avaliableSlots--;
     }
 
-    handleSocketOpen(socketId: string, ip: string) {
+    addSpectateToken(token: string, data: SpectateTokenData) {
         this.send({
-            type: ProcessMsgType.SocketOpen,
-            socketId,
-            ip,
-        });
-    }
-
-    handleMsg(data: ArrayBuffer, socketId: string) {
-        this.send({
-            type: ProcessMsgType.ClientSocketMsg,
-            socketId,
+            type: ProcessMsgType.AddSpectateToken,
+            token,
             data,
         });
     }
-
-    handleSocketClose(socketId: string) {
-        this.send({
-            type: ProcessMsgType.SocketClose,
-            socketId,
-        });
-    }
-}
-
-export interface GameSocketData {
-    gameId: string;
-    id: string;
-    closed: boolean;
-    rateLimit: Record<symbol, number>;
-    ip: string;
-    disconnectReason: string;
 }
 
 export class GameProcessManager {
-    readonly sockets = new Map<string, WebSocket<GameSocketData>>();
-
     readonly processById = new Map<string, GameProcess>();
     readonly processes: GameProcess[] = [];
 
     readonly logger = new ServerLogger("Game Process Manager");
 
+    private readonly _freePorts: number[] = [];
+
+    getNextPort() {
+        return this._freePorts.shift();
+    }
+
     constructor() {
-        process.on("beforeExit", () => {
-            for (const gameProc of this.processes) {
-                gameProc.process.kill();
-            }
-        });
+        for (let i = 0; i < Config.gameServer.maxGames; i++) {
+            this._freePorts.push(Config.gameServer.firstGamePort + i);
+        }
 
         // always keep some processes running even if theres no active games on them
         // creating a new proc is more expensive than reusing one
@@ -249,7 +218,7 @@ export class GameProcessManager {
         }, 0);
     }
 
-    newGame(config: ServerGameConfig): GameProcess {
+    newGame(config: ServerGameConfig): GameProcess | undefined {
         let gameProc: GameProcess | undefined;
 
         for (let i = 0; i < this.processes.length; i++) {
@@ -260,15 +229,23 @@ export class GameProcessManager {
             }
         }
 
-        const id = randomUUID();
+        const id = crypto.randomUUID();
         if (!gameProc) {
-            gameProc = new GameProcess(this, id, config);
+            const port = this.getNextPort();
+            if (port === undefined) {
+                return undefined;
+            }
+            gameProc = new GameProcess(this, id, config, port);
 
             this.processes.push(gameProc);
 
             gameProc.process.on("exit", () => {
                 this.killProcess(gameProc!);
+                if (!this._freePorts.includes(gameProc!.port)) {
+                    this._freePorts.push(gameProc!.port);
+                }
             });
+
             gameProc.process.on("close", () => {
                 this.killProcess(gameProc!);
             });
@@ -287,13 +264,6 @@ export class GameProcessManager {
     }
 
     killProcess(gameProc: GameProcess, signal: NodeJS.Signals = "SIGTERM"): void {
-        for (const [, socket] of this.sockets) {
-            const data = socket.getUserData();
-            if (data.closed) continue;
-            if (data.gameId !== gameProc.gameData.id) continue;
-            socket.end();
-        }
-
         // send SIGTERM, if still hasn't terminated after 5 seconds, send SIGKILL >:3
         gameProc.process.kill(signal);
         setTimeout(() => {
@@ -310,8 +280,8 @@ export class GameProcessManager {
         return this.processById.get(id);
     }
 
-    async findGame(body: FindGamePrivateBody): Promise<GameProcess> {
-        let proc = this.processes
+    async findGame(body: FindGamePrivateBody): Promise<GameProcess | undefined> {
+        let proc: GameProcess | undefined = this.processes
             .filter((proc) => {
                 const game = proc.gameData;
                 return (
@@ -332,6 +302,10 @@ export class GameProcessManager {
             });
         }
 
+        if (!proc) {
+            return undefined;
+        }
+
         // if the game has not finished creating
         // wait for it to be created to send the find game response
         if (proc.state !== ProcState.Running) {
@@ -348,28 +322,39 @@ export class GameProcessManager {
         return proc;
     }
 
-    onOpen(socketId: string, socket: WebSocket<GameSocketData>): void {
-        const data = socket.getUserData();
-        const proc = this.processById.get(data.gameId);
-        if (proc === undefined) {
-            this.logger.warn("process not found, closing socket.");
-            socket.close();
-            return;
+    async findGamesWithPlayer(body: SpectateGamePrivateBody): Promise<{ joinToken: string; game: GameProcess }[]> {
+        const filterFn = (p: GameData["livingPlayers"][0]) => {
+            if (body.filter.type === "user_id") {
+                return p.userId === body.filter.value;
+            } else {
+                return p.name === body.filter.value;
+            }
+        };
+
+        const res = [];
+        for (const proc of this.processes) {
+            if (proc.state !== ProcState.Running) continue;
+
+            for (const player of proc.gameData.livingPlayers) {
+                if (player.disconnected) continue;
+                if (!filterFn(player)) continue;
+
+                // use slightly shorter join tokens for this...
+                // since for the discord bot long URLs make the message run out of characters kinda fast
+                const joinToken = randomBytes(16).toString("base64url");
+                proc.addSpectateToken(joinToken, {
+                    playerId: player.id,
+                    specAnon: true,
+                    noSpecCooldown: true,
+                });
+
+                res.push({
+                    joinToken,
+                    game: proc,
+                });
+            }
         }
-        this.sockets.set(socketId, socket);
-        this.processById.get(data.gameId)?.handleSocketOpen(socketId, data.ip);
-    }
 
-    onMsg(socketId: string, msg: ArrayBuffer): void {
-        const data = this.sockets.get(socketId)?.getUserData();
-        if (!data) return;
-        this.processById.get(data.gameId)?.handleMsg(msg, socketId);
-    }
-
-    onClose(socketId: string) {
-        const data = this.sockets.get(socketId)?.getUserData();
-        this.sockets.delete(socketId);
-        if (!data) return;
-        this.processById.get(data.gameId)?.handleSocketClose(socketId);
+        return res;
     }
 }

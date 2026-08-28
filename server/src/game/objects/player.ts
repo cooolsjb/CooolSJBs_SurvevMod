@@ -135,13 +135,6 @@ export class PlayerBarn {
         this.playerStatusRate = net.getPlayerStatusUpdateRate(this.game.map.factionMode);
     }
 
-    randomPlayer(player?: Player) {
-        const livingPlayers = player
-            ? this.livingPlayers.filter((p) => p != player)
-            : this.livingPlayers;
-        return livingPlayers[util.randomInt(0, livingPlayers.length - 1)];
-    }
-
     addPlayer(
         client: Client,
         joinMsg: net.JoinMsg,
@@ -304,6 +297,10 @@ export class PlayerBarn {
             if (!player.dead && sendWinEmotes) {
                 player.emoteFromSlot(EmoteSlot.Win);
             }
+
+            if (this.game.over && !player.dead && !player.sentgameOverMsg) {
+                player.addGameOverMsg();
+            }
         }
 
         // doing this after updates ensures that gameover msgs sent are always accurate
@@ -365,7 +362,7 @@ export class PlayerBarn {
 
                     if (!finalPlayers.length) continue;
 
-                    const randomPlayer = util.randomItem(finalPlayers)!;
+                    const randomPlayer = util.randomItem(finalPlayers);
                     randomPlayer.promoteToRole(scheduledRole.role);
                 }
             }
@@ -459,18 +456,6 @@ export class PlayerBarn {
         }
     }
 
-    isTeamGameOver(): boolean {
-        const groupAlives = [...this.groups.values()].filter(
-            (group) => !group.allDeadOrDisconnected,
-        );
-
-        if (groupAlives.length <= 1) {
-            return true;
-        }
-
-        return false;
-    }
-
     getAliveGroups(): Group[] {
         return [...this.groups.values()].filter(
             (group) => group.livingPlayers.length > 0,
@@ -549,23 +534,6 @@ export class PlayerBarn {
         this.groups.push(group);
         this.groupsByHash.set(hash, group);
         return group;
-    }
-
-    nextTeam(currentTeam: Group) {
-        const aliveTeams = Array.from(this.groups.values()).filter(
-            (t) => !t.allDeadOrDisconnected,
-        );
-        const currentTeamIndex = aliveTeams.indexOf(currentTeam);
-        const newIndex = (currentTeamIndex + 1) % aliveTeams.length;
-        return aliveTeams[newIndex];
-    }
-
-    prevTeam(currentTeam: Group) {
-        const aliveTeams = Array.from(this.groups.values()).filter(
-            (t) => !t.allDeadOrDisconnected,
-        );
-        const currentTeamIndex = aliveTeams.indexOf(currentTeam);
-        return aliveTeams.at(currentTeamIndex - 1) ?? currentTeam;
     }
 
     getPlayerWithHighestKills(): Player | undefined {
@@ -777,7 +745,7 @@ export class Player extends BaseGameObject {
         this.obstacleOutfit = undefined;
 
         if (def.obstacleType) {
-            this.obstacleOutfit = this.game.map.genOutfitObstacle(def.obstacleType, this);
+            this.obstacleOutfit = this.game.map.genOutfitObstacle(def.obstacleType, this, def.baseScale);
         }
         this.setDirty();
     }
@@ -1011,7 +979,7 @@ export class Player extends BaseGameObject {
                 newOutfit = newOutfit(clampedTeamId);
             }
             if (newOutfit) {
-                if (!oldOutfit.noDropOnDeath && !oldOutfit.noDrop) {
+                if (!oldOutfit.noDropOnDeath && !oldOutfit.noDrop && this.outfit !== this.loadout.outfit) {
                     this.dropLoot(this.outfit);
                 }
                 this.setOutfit(newOutfit);
@@ -1029,6 +997,9 @@ export class Player extends BaseGameObject {
 
                 this.helmet = roleHelmet;
                 this.hasRoleHelmet = true;
+            } else if (this.hasRoleHelmet) {
+                this.helmet = "";
+                this.hasRoleHelmet = false;
             }
 
             if (roleDef.defaultItems.chest) {
@@ -1103,6 +1074,10 @@ export class Player extends BaseGameObject {
     removeRole(): void {
         if (!this.role) return;
         this.role = "";
+        if (this.hasRoleHelmet) {
+            this.hasRoleHelmet = false;
+            this.helmet = "";
+        }
 
         this.mapIndicator?.kill();
         for (let i = 0; i < this.perks.length; i++) {
@@ -1494,8 +1469,7 @@ export class Player extends BaseGameObject {
             if (this.roleMenuTicker <= 0) {
                 this.roleMenuTicker = 0;
                 const roleChoices = this.game.map.mapDef.gameMode.perkModeRoles!;
-                const randomRole = roleChoices[util.randomInt(0, roleChoices.length - 1)];
-                this.roleSelect(randomRole);
+                this.roleSelect(util.randomItem(roleChoices));
             }
         }
 
@@ -1631,7 +1605,7 @@ export class Player extends BaseGameObject {
             const emotes = Object.keys(EmotesDefs);
 
             this.game.playerBarn.addEmote(
-                emotes[Math.floor(Math.random() * emotes.length)],
+                util.randomItem(emotes),
                 this.__id,
             );
         }
@@ -2532,10 +2506,15 @@ export class Player extends BaseGameObject {
         }
     }
 
+    sentgameOverMsg = false;
     /**
      * adds gameover message to "this.msgsToSend" for the player and all their spectators
      */
-    addGameOverMsg(winningTeamId: number = 0): void {
+    addGameOverMsg(): void {
+        if (this.sentgameOverMsg) return;
+
+        const winningTeamId = this.game.winningTeamId;
+
         this.questManager.flushProgress(winningTeamId);
 
         const aliveCount = this.game.modeManager.aliveCount();
@@ -2546,6 +2525,8 @@ export class Player extends BaseGameObject {
             statsMsg.playerStats = this;
             this.client.sendMsg(net.MsgType.PlayerStats, statsMsg);
         } else {
+            this.sentgameOverMsg = true;
+
             const gameOverMsg = new net.GameOverMsg();
 
             const statsArr: net.PlayerStatsMsg["playerStats"][] = this.game.modeManager.getGameoverPlayers(this);
@@ -2757,7 +2738,7 @@ export class Player extends BaseGameObject {
 
                 if (!lonePerks) {
                     if (rolePerks.length > 0 && perkPool.length > 0) {
-                        const perkToReplace = rolePerks[util.randomInt(0, rolePerks.length - 1)].type;
+                        const perkToReplace = util.randomItem(rolePerks).type;
                         const candidatePerks = perkPool.filter(
                             (p) => !killCreditSource.hasPerk(p),
                         );
@@ -2775,7 +2756,7 @@ export class Player extends BaseGameObject {
             killMsg.killerKills = killCreditSource.kills;
         }
 
-        if (params.source?.__type === ObjectType.Player) {
+        if (params.damageType !== GameConfig.DamageType.Bleeding && params.source?.__type === ObjectType.Player) {
             killMsg.killerId = params.source.__id;
         }
 
@@ -3516,7 +3497,7 @@ export class Player extends BaseGameObject {
             const obstacle = objs[i];
             if (obstacle.__type !== ObjectType.Obstacle) continue;
             if (!obstacle.dead && util.sameLayer(obstacle.layer, this.layer)) {
-                if (obstacle.isButton && obstacle.button.isVat) {
+                if (obstacle.isButton && obstacle.button!.isVat) {
                     const distance = v2.distance(this.pos, obstacle.pos);
                     if (distance + this.rad < obstacle.interactionRad * obstacle.scale) {
                         obstacles.push({
@@ -3947,7 +3928,7 @@ export class Player extends BaseGameObject {
 
         if (playerLootTypes.length == 0) return;
 
-        const item = playerLootTypes[util.randomInt(0, playerLootTypes.length - 1)];
+        const item = util.randomItem(playerLootTypes);
         const weapIdx = this.weapons.findIndex((w) => w.type == item);
 
         const dropMsg = new net.DropItemMsg();
@@ -3970,21 +3951,17 @@ export class Player extends BaseGameObject {
 
         if (oldWeaponDef.noPotatoSwap) return;
         const weaponDefs = WeaponTypeToDefs[oldWeaponDef.type];
+
         // necessary for type safety since Object.entries() is not type safe and just returns "any"
-        const enumerableDefs = Object.entries(weaponDefs) as [
-            string,
-            GunDef | ThrowableDef | MeleeDef,
-        ][];
-
-        const filterCb: ([_type, def]: [
-            string,
-            GunDef | ThrowableDef | MeleeDef,
-        ]) => boolean = this.hasPerk("rare_potato")
-            ? ([_type, def]) => !def.noPotatoSwap && def.quality == PerkProperties.rare_potato.quality
-            : ([_type, def]) => !def.noPotatoSwap;
-
-        const weaponChoices = enumerableDefs.filter(filterCb);
-        const [chosenWeaponType, chosenWeaponDef] = weaponChoices[util.randomInt(0, weaponChoices.length - 1)];
+        const enumerableDefs = Object.entries(weaponDefs) as [string, GunDef | ThrowableDef | MeleeDef][];
+        const hasRarePotato = this.hasPerk("rare_potato");
+        const weaponChoices = enumerableDefs.filter(([type, def]) => {
+            if (def.noPotatoSwap) return false;
+            if (!this.game.map.factionMode && type === "tomato") return false;
+            if (hasRarePotato && def.quality !== PerkProperties.rare_potato.quality) return false;
+            return true;
+        });
+        const [chosenWeaponType, chosenWeaponDef] = util.randomItem(weaponChoices);
 
         let index;
         if (this.activeWeapon === oldWeapon) {
@@ -4085,7 +4062,6 @@ export class Player extends BaseGameObject {
 
         if (armorDef.type == "helmet" && armorDef.role && this.role == armorDef.role) {
             this.removeRole();
-            this.hasRoleHelmet = false;
         }
 
         if (armorDef.type == "helmet" && armorDef.perk && this.hasPerk(armorDef.perk)) {
@@ -4468,10 +4444,10 @@ export class Player extends BaseGameObject {
             player._lastBreathTicker = 5;
 
             player.giveHaste(GameConfig.HasteType.Inspire, 5);
-            if (player.teamId == 1 && player.__id != this.__id) {
+            if (player.teamId == GameConfig.FactionTeam.Red && player.__id != this.__id) {
                 this.game.playerBarn.addEmote("emote_bugle_final_red", player.__id);
             }
-            if (player.teamId == 2 && player.__id != this.__id) {
+            if (player.teamId == GameConfig.FactionTeam.Blue && player.__id != this.__id) {
                 this.game.playerBarn.addEmote("emote_bugle_final_blue", player.__id);
             }
             player.recalculateScale();
@@ -4489,10 +4465,10 @@ export class Player extends BaseGameObject {
 
         for (const player of affectedPlayers) {
             player.giveHaste(GameConfig.HasteType.Inspire, 3);
-            if (player.teamId == 1 && player.__id != this.__id) {
+            if (player.teamId == GameConfig.FactionTeam.Red && player.__id != this.__id) {
                 this.game.playerBarn.addEmote("emote_bugle_inspiration_red", player.__id);
             }
-            if (player.teamId == 2 && player.__id != this.__id) {
+            if (player.teamId == GameConfig.FactionTeam.Blue && player.__id != this.__id) {
                 this.game.playerBarn.addEmote(
                     "emote_bugle_inspiration_blue",
                     player.__id,
@@ -4546,9 +4522,9 @@ export class Player extends BaseGameObject {
         }
 
         if (this.game.map.potatoMode && this.game.map.factionMode) {
-            if (this.teamId === 1) {
+            if (this.teamId === GameConfig.FactionTeam.Red) {
                 emote = "emote_tomato";
-            } else if (this.teamId === 2) {
+            } else if (this.teamId === GameConfig.FactionTeam.Blue) {
                 emote = "emote_potato";
             }
         }

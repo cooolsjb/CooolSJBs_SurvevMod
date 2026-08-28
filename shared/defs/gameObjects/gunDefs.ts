@@ -1,3 +1,4 @@
+import { FactionTeam } from "../../gameConfig.ts";
 import { type DeepPartial, util } from "../../utils/util.ts";
 import type { Vec2 } from "../../utils/v2.ts";
 
@@ -69,7 +70,7 @@ export interface GunDef {
         cycle?: string;
         pull?: string;
         shootLast?: string;
-        shootTeam?: Record<string, string>;
+        shootTeam?: Record<FactionTeam, string>;
         shootAlt?: string;
         fallOff?: number;
         reloadAlt?: string;
@@ -2041,7 +2042,7 @@ export const BaseDefs: Record<string, GunDef> = {
         recoilTime: 1e10,
         moveSpread: 1.5,
         shotSpread: 5.5,
-        bulletCount: 8,
+        bulletCount: 9,
         jitter: 0.3,
         bulletType: "bullet_flechette",
         headshotMult: 1.5,
@@ -3235,7 +3236,7 @@ export const BaseDefs: Record<string, GunDef> = {
         shotSpread: 1,
         bulletCount: 1,
         bulletType: "bullet_sw500",
-        headshotMult: 2,
+        headshotMult: 1.5,
         speed: { equip: 0.5, attack: 0 },
         lootImg: {
             sprite: "loot-weapon-sw500.img",
@@ -3278,8 +3279,8 @@ export const BaseDefs: Record<string, GunDef> = {
         barrelLength: 2.8,
         barrelOffset: 0,
         recoilTime: 0.35,
-        moveSpread: 2.5,
-        shotSpread: 5,
+        moveSpread: 3.5,
+        shotSpread: 3.5,
         bulletCount: 1,
         bulletType: "bullet_ash12",
         headshotMult: 2,
@@ -3642,7 +3643,7 @@ export const BaseDefs: Record<string, GunDef> = {
         },
         sound: {
             shoot: "bugle_01",
-            shootTeam: { 1: "bugle_01", 2: "bugle_02" },
+            shootTeam: { [FactionTeam.Red]: "bugle_01", [FactionTeam.Blue]: "bugle_02" },
             shootAlt: "bugle_03",
             reload: "",
             pickup: "stow_weapon_01",

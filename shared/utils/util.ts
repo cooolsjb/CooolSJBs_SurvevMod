@@ -20,7 +20,7 @@ export function assert(value: unknown, message?: string | Error): asserts value 
     if (!value) {
         const error = message instanceof Error
             ? message
-            : new AssertionError(message ?? "Assertation failed");
+            : new AssertionError(message ?? "Assertion failed");
         throw error;
     }
 }
@@ -245,6 +245,23 @@ export const util = {
         };
     },
 
+    bytesToBase64(bytes: Uint8Array) {
+        let binary = "";
+        for (const byte of bytes) {
+            binary += String.fromCharCode(byte);
+        }
+        return btoa(binary);
+    },
+
+    base64ToBytes(str: string) {
+        const binary = atob(str);
+        const bytes = new Uint8Array(binary.length);
+        for (let i = 0; i < binary.length; i++) {
+            bytes[i] = binary.charCodeAt(i);
+        }
+        return bytes;
+    },
+
     // https://stackoverflow.com/questions/5623838/rgb-to-hex-and-hex-to-rgb
     rgbToHex(c: { r: number; g: number; b: number }) {
         const rgb = util.rgbToInt(c);
@@ -356,9 +373,8 @@ export const util = {
         return items[idx];
     },
 
-    randomItem<T>(array: T[], rand = Math.random): T | undefined {
-        if (array.length === 0) return undefined;
-        return array[util.randomInt(0, array.length - 1, rand)];
+    randomItem<T>(array: T[], rand = Math.random): T {
+        return array[Math.floor(rand() * array.length)];
     },
 
     weightedRandomObject(items: Record<string, number>) {

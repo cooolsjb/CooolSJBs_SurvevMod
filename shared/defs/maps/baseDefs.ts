@@ -2,7 +2,6 @@ import { GameConfig } from "../../gameConfig.ts";
 import type { DeepPartial } from "../../utils/util.ts";
 import { v2 } from "../../utils/v2.ts";
 import type { MapDef } from "../mapDefs.ts";
-import { MapId } from "../types/misc.ts";
 
 // @NOTE: Entries defined as single-element arrays, like fixedSpawns: [{ }],
 // are done this way so that util.mergeDeep(...) will function as expected
@@ -12,7 +11,7 @@ import { MapId } from "../types/misc.ts";
 // elements if that property is set.
 
 export const Main: MapDef = {
-    mapId: MapId.Main,
+    mapId: GameConfig.MapId.Main,
     desc: {
         name: "Normal",
         icon: "",
@@ -30,7 +29,7 @@ export const Main: MapDef = {
             { name: "vault_change_03", channel: "sfx" },
             { name: "watering_01", channel: "sfx" },
         ],
-        atlases: ["gradient", "loadout", "shared", "main"],
+        atlases: ["loadout", "shared", "main"],
     },
     biome: {
         colors: {
@@ -528,6 +527,10 @@ export const Main: MapDef = {
             { name: "frag", count: 3, weight: 1 },
             { name: "mirv", count: 2, weight: 1 },
         ],
+        tier_health_healer: [
+            { name: "bandage", count: 5, weight: 4 },
+            { name: "healthkit", count: 1, weight: 6 },
+        ],
         tier_scavenger_adv: [
             { name: "m9", count: 1, weight: 1 },
             { name: "ots38_dual", count: 1, weight: 1 },
@@ -570,7 +573,7 @@ export const Main: MapDef = {
             { name: "m4a1", count: 1, weight: 1 },
             { name: "scorpion", count: 1, weight: 1 },
             { name: "scar", count: 1, weight: 1 },
-            { name: "flare", count: 1, weight: 1 },
+            { name: "flare_gun", count: 1, weight: 1 },
             { name: "garand", count: 1, weight: 0.75 },
             { name: "mosin", count: 1, weight: 0.5 },
             { name: "deagle", count: 1, weight: 1 },

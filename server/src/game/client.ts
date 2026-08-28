@@ -2,8 +2,10 @@ import type { EmoteDef } from "../../../shared/defs/gameObjects/emoteDefs.ts";
 import { GameObjectDefs } from "../../../shared/defs/register.ts";
 import { GameConfig } from "../../../shared/gameConfig.ts";
 import * as net from "../../../shared/net/net.ts";
+import { ObjectType } from "../../../shared/net/objectSerializeFns.ts";
 import { SpectateAction } from "../../../shared/net/spectateMsg.ts";
 import type { Emote, GroupStatus } from "../../../shared/net/updateMsg.ts";
+import type { GameWsDisconnectReason } from "../../../shared/types/api.ts";
 import { coldet } from "../../../shared/utils/coldet.ts";
 import { collider } from "../../../shared/utils/collider.ts";
 import { math } from "../../../shared/utils/math.ts";
@@ -11,7 +13,7 @@ import { util } from "../../../shared/utils/util.ts";
 import { v2 } from "../../../shared/utils/v2.ts";
 import { Config } from "../config.ts";
 
-import type { Game } from "./game.ts";
+import type { Game, JoinTokenData, SpectateTokenData } from "./game.ts";
 import type { GameObject } from "./objects/gameObject.ts";
 import type { MapIndicator } from "./objects/mapIndicator.ts";
 import type { Player } from "./objects/player.ts";
@@ -49,19 +51,7 @@ export class ClientBarn {
         this.msgsToSend.stream.index = 0;
     }
 
-    addClientWithPlayer(socket: ClientSocket<Client | undefined>, joinMsg: net.JoinMsg) {
-        const joinData = this.game.joinTokens.get(joinMsg.matchPriv);
-
-        if (!joinData || joinData.expiresAt < Date.now()) {
-            this.game.logger.warn("Client tried to join without or with expired join token");
-            socket.close();
-            if (joinData) {
-                this.game.joinTokens.delete(joinMsg.matchPriv);
-            }
-            return;
-        }
-        this.game.joinTokens.delete(joinMsg.matchPriv);
-
+    addClientWithPlayer(socket: ClientSocket<Client>, joinData: JoinTokenData, joinMsg: net.JoinMsg) {
         if (Config.rateLimitsEnabled) {
             const count = this.clients.filter(
                 (c) => {
@@ -71,7 +61,7 @@ export class ClientBarn {
                 },
             );
             if (count.length >= 5) {
-                socket.closeWithReason("rate_limited");
+                socket.close("rate_limited");
                 return;
             }
         }
@@ -85,10 +75,28 @@ export class ClientBarn {
         return client;
     }
 
+    addSpectatorClient(socket: ClientSocket<Client>, specData: SpectateTokenData) {
+        const player = this.game.objectRegister.getById(specData.playerId);
+
+        if (!player || player.__type !== ObjectType.Player || player.dead) {
+            socket.close("player_not_found");
+            return;
+        }
+
+        const client = new Client(this.game, socket, null, "");
+        this.clients.push(client);
+
+        client.specAnon = specData.specAnon;
+        client.noSpecCooldown = specData.noSpecCooldown;
+        client.spectating = player;
+
+        return client;
+    }
+
     deserializeMsg(buff: ArrayBuffer): {
         type: net.MsgType;
         msg: net.AbstractMsg | undefined;
-        error?: string;
+        error?: GameWsDisconnectReason;
     } {
         const msgStream = new net.MsgStream(buff);
         const stream = msgStream.stream;
@@ -119,7 +127,7 @@ export class ClientBarn {
                     return {
                         type: net.MsgType.Join,
                         msg: undefined,
-                        error: "index-invalid-protocol",
+                        error: "invalid_protocol",
                     };
                 }
                 stream.index = oldIdx;
@@ -162,14 +170,14 @@ export class ClientBarn {
         };
     }
 
-    handleMsg(buff: ArrayBuffer | Buffer, socket: ClientSocket<Client | undefined>) {
+    handleMsg(buff: ArrayBuffer | Buffer, socket: ClientSocket<Client>) {
         if (!(buff instanceof ArrayBuffer)) return;
 
         let client = socket.getUserData();
 
         let msg: net.AbstractMsg | undefined = undefined;
         let type = net.MsgType.None;
-        let error: string | undefined;
+        let error: GameWsDisconnectReason | undefined;
 
         try {
             const deserialized = this.deserializeMsg(buff);
@@ -186,34 +194,46 @@ export class ClientBarn {
                 // the slice is to make sure it doesn't overflow the error webhook
                 JSON.stringify([...new Uint8Array(buff.slice(0, 255))]),
             );
-            if (client) {
-                client.disconnect();
-            } else {
-                socket.close();
-            }
+            socket.close("invalid_packet");
             return;
         }
 
         if (error) {
-            this.game.logger.warn("Disconnecting client because of packet error:", error);
-            if (client) {
-                client.disconnect(error);
-            } else {
-                socket.close();
-            }
+            this.game.logger.warn("Disconnecting socket because of packet error:", error);
+            socket.close(error);
             return;
         }
 
         if (!msg) return;
 
         if (type === net.MsgType.Join && !client) {
-            client = this.game.clientBarn.addClientWithPlayer(socket, msg as net.JoinMsg);
+            const joinMsg = msg as net.JoinMsg;
+
+            const joinData = this.game.joinTokens.get(joinMsg.joinToken);
+            if (!joinData || joinData.expiresAt < Date.now()) {
+                this.game.logger.warn("Client tried to join without or with expired join token");
+                socket.close("invalid_token");
+                if (joinData) {
+                    this.game.joinTokens.delete(joinMsg.joinToken);
+                }
+                return;
+            }
+
+            if (joinData) {
+                if (joinData.type === "join") {
+                    client = this.game.clientBarn.addClientWithPlayer(socket, joinData.data, joinMsg);
+                } else {
+                    client = this.game.clientBarn.addSpectatorClient(socket, joinData.data);
+                }
+                this.game.joinTokens.delete(joinMsg.joinToken);
+            }
+
             return;
         }
 
         if (!client) {
             this.game.logger.warn("No client found and we didn't receive a JoinMsg, closing socket");
-            socket.close();
+            socket.close("invalid_packet");
             return;
         }
 
@@ -223,7 +243,7 @@ export class ClientBarn {
         client.handleMsg(type, msg);
     }
 
-    handleSocketClose(socket: ClientSocket<Client | undefined>) {
+    handleSocketClose(socket: ClientSocket<Client>) {
         const client = socket.getUserData();
         if (!client) return;
         client.spectating = undefined;
@@ -306,6 +326,7 @@ export class Client {
     private _specCooldown = 0;
     private _specAction = SpectateAction.None;
     specAnon = false;
+    noSpecCooldown = false;
 
     spectateNewPlayerTicker = 0;
 
@@ -327,7 +348,7 @@ export class Client {
 
     constructor(
         game: Game,
-        socket: ClientSocket<Client | undefined>,
+        socket: ClientSocket<Client>,
         userId: string | null,
         findGameIp: string,
     ) {
@@ -353,12 +374,8 @@ export class Client {
         this.socket.send(buffer);
     }
 
-    disconnect(reason?: string) {
-        if (reason) {
-            this.socket.closeWithReason(reason);
-        } else {
-            this.socket.close();
-        }
+    disconnect(reason?: GameWsDisconnectReason) {
+        this.socket.close(reason);
     }
 
     update(dt: number) {
@@ -366,7 +383,14 @@ export class Client {
             let newPlayerToSpectate: Player | undefined = undefined;
 
             // switch to a new spectator after 2 seconds if the player we are spectating has died
-            if (this.spectating.dead) {
+            // but don't do it if we are spectating a teammate and our entire team has died
+            // since we need to show the "team eliminated" screen in the client, and switching will hide it
+            const ourTeam = this.player?.team || this.player?.group;
+            const spectatingTeam = this.spectating.team || this.spectating.group;
+            const noAutoSwitch = ourTeam && spectatingTeam && ourTeam.id === spectatingTeam.id
+                && ourTeam.allDeadOrDisconnected;
+
+            if (this.spectating.dead && !noAutoSwitch && !this.game.over) {
                 this.spectateNewPlayerTicker += dt;
                 if (this.spectateNewPlayerTicker > 2) {
                     newPlayerToSpectate = this.getNewPlayerToSpectate();
@@ -389,7 +413,7 @@ export class Client {
 
                 // when spectating teammates we can have a lower cooldown
                 // since it cant be abused to know players positions
-                this._specCooldown = this.shouldSpectateTeam() ? 0.1 : 1;
+                this._specCooldown = this.getSpectateCooldown();
                 this._specAction = SpectateAction.None;
             }
 
@@ -731,6 +755,12 @@ export class Client {
         }
     }
 
+    getSpectateCooldown() {
+        if (this.noSpecCooldown) return 0;
+
+        return this.shouldSpectateTeam() ? 0.1 : 1;
+    }
+
     shouldSpectateTeam() {
         if (!this.player) return false;
 
@@ -773,15 +803,16 @@ export class Client {
                 return a.groupId - b.groupId;
             });
         } else {
-            return this.game.playerBarn.livingPlayers.filter(shouldSpectate);
+            return this.game.playerBarn.players.filter(shouldSpectate);
         }
     }
 
     getNewPlayerToSpectate(): Player {
         const spectateTeam = this.shouldSpectateTeam();
         let killer: Player | undefined = undefined;
-        if (this.player && !spectateTeam) {
-            killer = this.player.getAliveKiller();
+        const player = this.spectating || this.player;
+        if (player && !spectateTeam) {
+            killer = player.getAliveKiller();
         }
         if (killer) return killer;
         return this.getSpectablePlayers()[0];
@@ -792,7 +823,7 @@ export class Client {
 
         switch (spectateMsg.action) {
             case SpectateAction.Begin:
-                if (this.spectating) break;
+                if (this.spectating && !this.spectating.dead) break;
                 this.spectating = this.getNewPlayerToSpectate();
                 break;
             case SpectateAction.Next:

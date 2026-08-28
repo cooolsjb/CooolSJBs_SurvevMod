@@ -1,3 +1,4 @@
+import type { MapDefKey } from "../../../shared/defs/mapDefs.ts";
 import { TeamMode } from "../../../shared/gameConfig.ts";
 import type { Loadout } from "../../../shared/utils/loadout.ts";
 import { math } from "../../../shared/utils/math.ts";
@@ -24,7 +25,6 @@ import { SmokeBarn } from "./objects/smoke.ts";
 import { Profiler } from "./profiler.ts";
 
 export interface JoinTokenData {
-    expiresAt: number;
     userId: string | null;
     findGameIp: string;
     loadout?: Loadout;
@@ -36,10 +36,27 @@ export interface JoinTokenData {
     };
 }
 
+export interface SpectateTokenData {
+    playerId: number;
+    specAnon: boolean;
+    noSpecCooldown: boolean;
+}
+
+type JoinToken = {
+    type: "join";
+    expiresAt: number;
+    data: JoinTokenData;
+} | {
+    type: "spectate";
+    expiresAt: number;
+    data: SpectateTokenData;
+};
+
 export class Game {
     started = false;
     stopped = false;
     over = false;
+    winningTeamId = 0;
     startedTime = 0;
     stopTicker = 0;
     timeRunning = 0;
@@ -48,7 +65,7 @@ export class Game {
 
     id: string;
     teamMode: TeamMode;
-    mapName: string;
+    mapName: MapDefKey;
     isTeamMode: boolean;
     config: ServerGameConfig;
     modeManager: GameModeManager;
@@ -64,7 +81,7 @@ export class Game {
     netSyncWarnThreshold = (1000 / Config.netSyncTps) * 4;
     netSyncWarnings = 0;
 
-    joinTokens = new Map<string, JoinTokenData>();
+    joinTokens = new Map<string, JoinToken>();
 
     get aliveCount(): number {
         return this.playerBarn.livingPlayers.length;
@@ -301,7 +318,6 @@ export class Game {
         this.lootBarn.flush();
         this.planeBarn.flush();
         this.bulletBarn.flush();
-        this.airdropBarn.flush();
         this.objectRegister.flush();
         this.explosionBarn.flush();
         this.gas.flush();
@@ -348,7 +364,7 @@ export class Game {
             // stop game after 1.8s
             this.stopTicker = 1.8;
 
-            this.modeManager.sendGameOverMsgs();
+            this.winningTeamId = this.modeManager.getWinningTeamId();
             this.updateData();
         }
     }
@@ -361,15 +377,26 @@ export class Game {
         };
 
         for (const token of tokens) {
-            this.joinTokens.set(token.token, {
+            this.joinTokens.set(token.joinToken, {
+                type: "join",
                 expiresAt: Date.now() + 10000,
-                userId: token.userId,
-                groupData,
-                findGameIp: token.ip,
-                loadout: token.loadout,
-                quests: token.quests,
+                data: {
+                    userId: token.userId,
+                    groupData,
+                    findGameIp: token.ip,
+                    loadout: token.loadout,
+                    quests: token.quests,
+                },
             });
         }
+    }
+
+    addSpectateToken(token: string, data: SpectateTokenData) {
+        this.joinTokens.set(token, {
+            type: "spectate",
+            expiresAt: Date.now() + 60000,
+            data,
+        });
     }
 
     stop() {
@@ -379,8 +406,8 @@ export class Game {
             client.disconnect();
         }
         this.logger.info("Game Ended");
-        this.updateData();
         this._saveGameToDatabase();
+        this.updateData();
     }
 
     // implementation of those is on gameProcess.ts
@@ -388,8 +415,8 @@ export class Game {
     // to make offline mode and unit tests easier to maintain
 
     updateData() {}
-    protected async _saveGameToDatabase() {}
-    async sendQuestProgress(_userId: string, _progress: Array<{ id: string; delta: number }>) {}
+    protected _saveGameToDatabase() {}
+    sendQuestProgress(_userId: string, _progress: Array<{ id: string; delta: number }>) {}
 
     /**
      * Steps the game X seconds in the future

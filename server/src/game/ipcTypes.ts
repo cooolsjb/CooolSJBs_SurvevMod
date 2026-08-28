@@ -1,15 +1,24 @@
+import type { MapDefKey } from "../../../shared/defs/mapDefs";
 import type { TeamMode } from "../../../shared/gameConfig";
 import type { FindGamePrivateBody, ServerGameConfig } from "../utils/types";
+import type { SpectateTokenData } from "./game";
 
 export interface GameData {
     id: string;
     teamMode: TeamMode;
-    mapName: string;
+    mapName: MapDefKey;
     canJoin: boolean;
     aliveCount: number;
     startedTime: number;
     stopped: boolean;
     timeRunning: number;
+
+    livingPlayers: Array<{
+        id: number;
+        userId: string | null;
+        name: string;
+        disconnected: boolean;
+    }>;
 }
 
 export enum ProcessMsgType {
@@ -17,10 +26,7 @@ export enum ProcessMsgType {
     KeepAlive,
     UpdateData,
     AddJoinToken,
-    SocketOpen,
-    ClientSocketMsg,
-    ServerSocketMsg,
-    SocketClose,
+    AddSpectateToken,
 }
 
 export interface CreateGameMsg {
@@ -43,38 +49,10 @@ export interface AddJoinTokenMsg {
     tokens: FindGamePrivateBody["playerData"];
 }
 
-export interface SocketOpenMsg {
-    type: ProcessMsgType.SocketOpen;
-    socketId: string;
-    ip: string;
-}
-
-export interface SocketClientMsg {
-    type: ProcessMsgType.ClientSocketMsg;
-    socketId: string;
-    data: ArrayBuffer | Uint8Array;
-}
-
-/**
- * msgs is an array to batch all msgs created in the same game net tick
- * into the same send call
- */
-export interface SocketServerMsg {
-    type: ProcessMsgType.ServerSocketMsg;
-    msgs: Array<{
-        socketId: string;
-        data: ArrayBuffer | Uint8Array;
-    }>;
-}
-
-/**
- * Sent by the server to the game when the socket is closed
- * Or by the game to the server when the game wants to close the socket
- */
-export interface SocketCloseMsg {
-    type: ProcessMsgType.SocketClose;
-    socketId: string;
-    reason?: string;
+export interface AddSpectateTokenMsg {
+    type: ProcessMsgType.AddSpectateToken;
+    token: string;
+    data: SpectateTokenData;
 }
 
 export type ProcessMsg =
@@ -82,7 +60,4 @@ export type ProcessMsg =
     | KeepAliveMsg
     | UpdateDataMsg
     | AddJoinTokenMsg
-    | SocketOpenMsg
-    | SocketClientMsg
-    | SocketServerMsg
-    | SocketCloseMsg;
+    | AddSpectateTokenMsg;

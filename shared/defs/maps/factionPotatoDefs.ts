@@ -1,17 +1,12 @@
+import { FactionTeam, GameConfig } from "../../gameConfig.ts";
 import { util } from "../../utils/util.ts";
 import { getTeamWeapon } from "../gameObjects/roleDefs.ts";
 import type { MapDef } from "../mapDefs.ts";
-import { MapId } from "../types/misc.ts";
 import type { PartialMapDef } from "./baseDefs.ts";
 import { Faction } from "./factionDefs.ts";
 
-export enum TeamColor {
-    Red = 1,
-    Blue = 2,
-}
-
 const mapDef: PartialMapDef = {
-    mapId: MapId.Faction,
+    mapId: GameConfig.MapId.Faction,
     desc: {
         name: "Potato vs Tomato",
         icon: "img/gui/star.svg",
@@ -92,7 +87,7 @@ const mapDef: PartialMapDef = {
             { name: "vault_change_03", channel: "sfx" },
             { name: "watering_01", channel: "sfx" },
         ],
-        atlases: ["gradient", "loadout", "shared", "faction", "potato"],
+        atlases: ["loadout", "shared", "faction", "potato"],
     },
     biome: {
         particles: { camera: "falling_pvt" },
@@ -117,10 +112,10 @@ const mapDef: PartialMapDef = {
                     defaultItems: {
                         weapons: [
                             { type: "", ammo: 0 },
-                            (teamcolor: TeamColor) =>
+                            (teamcolor: FactionTeam) =>
                                 getTeamWeapon(
                                     {
-                                        [TeamColor.Red]: util.weightedRandom([
+                                        [FactionTeam.Red]: util.weightedRandom([
                                             {
                                                 type: "m4a1",
                                                 ammo: 40,
@@ -134,7 +129,7 @@ const mapDef: PartialMapDef = {
                                                 weight: 0.2,
                                             },
                                         ]),
-                                        [TeamColor.Blue]: util.weightedRandom([
+                                        [FactionTeam.Blue]: util.weightedRandom([
                                             {
                                                 type: "grozas",
                                                 ammo: 40,
@@ -178,10 +173,10 @@ const mapDef: PartialMapDef = {
                     defaultItems: {
                         weapons: [
                             { type: "", ammo: 0 },
-                            (teamcolor: TeamColor) =>
+                            (teamcolor: FactionTeam) =>
                                 getTeamWeapon(
                                     {
-                                        [TeamColor.Red]: util.weightedRandom([
+                                        [FactionTeam.Red]: util.weightedRandom([
                                             {
                                                 type: "m249",
                                                 ammo: 100,
@@ -201,7 +196,7 @@ const mapDef: PartialMapDef = {
                                                 weight: 0.4,
                                             },
                                         ]),
-                                        [TeamColor.Blue]: util.weightedRandom([
+                                        [FactionTeam.Blue]: util.weightedRandom([
                                             {
                                                 type: "m249",
                                                 ammo: 100,
@@ -388,4 +383,4 @@ const mapDef: PartialMapDef = {
     /* STRIP_FROM_PROD_CLIENT:END */
 };
 
-export const factionPotato = util.mergeDeep({}, Faction, mapDef) as MapDef;
+export const FactionPotato = util.mergeDeep({}, Faction, mapDef) as MapDef;

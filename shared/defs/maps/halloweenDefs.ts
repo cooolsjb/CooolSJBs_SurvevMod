@@ -1,11 +1,10 @@
 import { GameConfig } from "../../gameConfig.ts";
 import { util } from "../../utils/util.ts";
 import type { MapDef } from "../mapDefs.ts";
-import { MapId } from "../types/misc.ts";
 import { Main, type PartialMapDef } from "./baseDefs.ts";
 
 const mapDef: PartialMapDef = {
-    mapId: MapId.Halloween,
+    mapId: GameConfig.MapId.Halloween,
 
     desc: {
         name: "Halloween",
@@ -80,7 +79,7 @@ const mapDef: PartialMapDef = {
                 channel: "sfx",
             },
         ],
-        atlases: ["gradient", "loadout", "shared", "halloween"],
+        atlases: ["loadout", "shared", "halloween"],
     },
     biome: {
         colors: {
@@ -238,7 +237,8 @@ const mapDef: PartialMapDef = {
             {
                 junkyard_01: 1,
                 warehouse_01h: 4,
-                house_red_01h: 7,
+                house_red_01h: { small: 2, large: 3 },
+                house_red_02h: { small: 2, large: 3 },
                 barn_01h: 1,
                 cache_03: 36,
                 cache_01: 1,
@@ -248,6 +248,7 @@ const mapDef: PartialMapDef = {
                 bunker_structure_03: 1,
                 bunker_structure_07: 1,
                 mil_crate_02: { odds: 0.25 },
+                tree_02h: { small: 6, large: 8 },
                 tree_05: 72,
                 tree_07: 700,
                 tree_08: 200,

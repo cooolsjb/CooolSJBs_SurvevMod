@@ -2,7 +2,6 @@ import type { AtlasDef } from "../atlasDefs.ts";
 import { BuildingSprites } from "./buildings.ts";
 
 export const DesertAtlas: AtlasDef = {
-    compress: true,
     images: [
         ...BuildingSprites.reserve,
         ...BuildingSprites.saloon,
@@ -47,6 +46,8 @@ export const DesertAtlas: AtlasDef = {
 
         "map/map-tree-05c.svg",
         "map/map-tree-06.svg",
+
+        "map/map-safe-01.svg",
 
         "map/map-barrel-05.svg",
 

@@ -1,8 +1,7 @@
 import * as PIXI from "pixi.js-legacy";
 
-import type { BuildingDef } from "../../../shared/defs/mapObjectsTyping.ts";
+import type { BuildingDef, FloorImage } from "../../../shared/defs/mapObjects/buildings/buildingDefs.ts";
 import { MapObjectDefs } from "../../../shared/defs/register.ts";
-import type { FloorImage } from "../../../shared/defs/types/building.ts";
 import type { ObjectData, ObjectType } from "../../../shared/net/objectSerializeFns.ts";
 import type { Collider } from "../../../shared/utils/coldet.ts";
 import { collider } from "../../../shared/utils/collider.ts";
@@ -183,9 +182,9 @@ export class Building implements AbstractObject {
         this.hasPuzzle = data.hasPuzzle;
 
         if (this.hasPuzzle) {
-            this.puzzleErrSeqModified = data.puzzleErrSeq != this.puzzleErrSeq;
-            this.puzzleSolved = data.puzzleSolved;
-            this.puzzleErrSeq = data.puzzleErrSeq;
+            this.puzzleErrSeqModified = data.puzzle!.errSeq != this.puzzleErrSeq;
+            this.puzzleSolved = data.puzzle!.solved;
+            this.puzzleErrSeq = data.puzzle!.errSeq;
         }
 
         const def = MapObjectDefs.typeToDef(this.type, "building");
@@ -627,7 +626,7 @@ export class Building implements AbstractObject {
                     util.random(aabb.min.x, aabb.max.x),
                     util.random(aabb.min.y, aabb.max.y),
                 );
-                const vel = v2.mul(v2.randomUnit(), util.random(0, 15));
+                const vel = v2.randomUnit(util.random(0, 15));
                 particleBarn.addParticle(def.particle, this.layer, pos, vel);
             }
 

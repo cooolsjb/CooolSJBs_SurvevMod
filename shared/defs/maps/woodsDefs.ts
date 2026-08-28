@@ -2,11 +2,10 @@ import { GameConfig } from "../../gameConfig.ts";
 import { util } from "../../utils/util.ts";
 import { v2 } from "../../utils/v2.ts";
 import type { MapDef } from "../mapDefs.ts";
-import { MapId } from "../types/misc.ts";
 import { Main, type PartialMapDef } from "./baseDefs.ts";
 
 const mapDef: PartialMapDef = {
-    mapId: MapId.Woods,
+    mapId: GameConfig.MapId.Woods,
     desc: {
         name: "Woods",
         icon: "img/gui/player-king-woods.svg",
@@ -19,7 +18,7 @@ const mapDef: PartialMapDef = {
             { name: "footstep_09", channel: "sfx" },
             { name: "helmet03_forest_pickup_01", channel: "ui" },
         ],
-        atlases: ["gradient", "loadout", "shared", "woods"],
+        atlases: ["loadout", "shared", "woods"],
     },
     biome: {
         colors: {
@@ -228,31 +227,28 @@ const mapDef: PartialMapDef = {
         ],
         fixedSpawns: [
             {
-                logging_complex_02: 1,
-                logging_complex_03: 3,
-                warehouse_01: 3,
-                workshop_complex_01: 1,
-                house_red_01: 3,
-                barn_01: 3,
-                cache_03: 48,
-                cache_01w: 1,
-                cache_02w: 1,
-                cache_07w: 1,
+                barn_01: { small: 3, large: 4 },
                 bunker_structure_01b: 1,
                 bunker_structure_03: 1,
                 bunker_structure_07: 1,
-                teahouse_01: {
-                    small: 2,
-                    large: 3,
-                },
+                cache_01w: 1,
+                cache_02w: 1,
+                cache_03: 48,
+                cache_07w: 1,
                 chest_03: { odds: 0.5 },
                 crate_19: 12,
-                stone_04: 6,
-                tree_02: 6,
+                house_red_01: { small: 3, large: 4 },
+                logging_complex_02: 1,
+                logging_complex_03: 3,
+                stone_04: { small: 6, large: 8 },
+                teahouse_01: { small: 2, large: 3 },
+                tree_02: { small: 6, large: 8 },
                 tree_07: 1100,
                 tree_08: 1100,
                 tree_08b: 150,
                 tree_09: 84,
+                warehouse_01: { small: 3, large: 4 },
+                workshop_complex_01: 1,
             },
         ],
         randomSpawns: [],

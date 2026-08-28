@@ -53,11 +53,13 @@ export class BitStream extends bb.BitStream {
     }
 
     writeFloat(f: number, min: number, max: number, bits: number) {
+        /* STRIP_FROM_PROD_SERVER:START */
         assert(bits > 0 && bits < 31);
         assert(
             f >= min && f <= max,
             `writeFloat: value out of range: ${f}, range: [${min}, ${max}]`,
         );
+        /* STRIP_FROM_PROD_SERVER:END */
         const range = (1 << bits) - 1;
         const x = math.clamp(f, min, max);
         const t = (x - min) / (max - min);
@@ -269,10 +271,9 @@ export enum MsgType {
     None,
     // DON'T EVEN THINK ABOUT REORDERING THINGS HERE!!!!
     // JoinMsg should always be ID 1 to not break protocol version check with old clients!
-    // And DisconnectMsg should always be ID 2, so it receives errors from JoinMsg Properly
     // Please add new Msg Types always to the end of the enum to stay as safe as possible
     Join = 1,
-    Disconnect = 2,
+    _Disconnect = 2, // now unused, socket.close has disconnect reasons
     Input,
     Edit,
     Joined,
@@ -312,7 +313,6 @@ export class UpdatePassMsg {
 }
 
 export { AliveCountsMsg } from "./aliveCountsMsg.ts";
-export { DisconnectMsg } from "./disconnectMsg.ts";
 export { DropItemMsg } from "./dropItemMsg.ts";
 export { EditMsg } from "./editMsg.ts";
 export { EmoteMsg } from "./emoteMsg.ts";

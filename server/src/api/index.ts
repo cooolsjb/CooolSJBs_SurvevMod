@@ -91,28 +91,32 @@ app.get("/api/site_info", (c) => {
 // not using the middleware here to not add extra indentation... smh
 const findGameRateLimit = new HTTPRateLimit(5, 3000);
 
-app.post("/api/find_game", validateParams(zFindGameBody), async (c) => {
+app.post("/api/find_game", (c) => {
+    return c.json({ error: "invalid_protocol" });
+});
+
+app.post("/api/find_game_v2", validateParams(zFindGameBody), async (c) => {
     const ip = getHonoIp(c, Config.apiServer.proxyIPHeader);
 
     if (!ip) {
-        return c.json<FindGameResponse>({ error: "invalid_ip" }, 500);
+        return c.json<FindGameResponse>({ type: "error", error: "invalid_ip" }, 500);
     }
 
     if (findGameRateLimit.isRateLimited(ip)) {
-        return c.json<FindGameResponse>({ error: "rate_limited" }, 429);
+        return c.json<FindGameResponse>({ type: "error", error: "rate_limited" }, 429);
     }
 
     const banData = await isBanned(ip);
     if (banData) {
         return c.json<FindGameResponse>({
-            banned: true,
+            type: "banned",
             reason: banData.reason,
             permanent: banData.permanent,
             expiresIn: banData.expiresIn,
         });
     }
 
-    const token = randomUUID();
+    const joinToken = randomUUID();
     let user: UsersTableSelect | null = null;
 
     const sessionId = getCookie(c, "session") ?? null;
@@ -132,33 +136,34 @@ app.post("/api/find_game", validateParams(zFindGameBody), async (c) => {
     }
 
     if (await isBehindProxy(ip, !user)) {
-        return c.json<FindGameResponse>({ error: "behind_proxy" });
+        return c.json<FindGameResponse>({ type: "error", error: "behind_proxy" });
     }
 
     const body = c.req.valid("json");
+
+    const mode = server.modes[body.gameModeIdx];
+    if (!mode || !mode.enabled) {
+        return c.json<FindGameResponse>({ type: "error", error: "mode_disabled" });
+    }
+
     if (server.captchaEnabled && !user) {
         if (!body.turnstileToken) {
-            return c.json<FindGameResponse>({ error: "invalid_captcha" });
+            return c.json<FindGameResponse>({ type: "error", error: "invalid_captcha" });
         }
 
         try {
             if (!(await verifyTurnsStile(body.turnstileToken, ip))) {
-                return c.json<FindGameResponse>({ error: "invalid_captcha" });
+                return c.json<FindGameResponse>({ type: "error", error: "invalid_captcha" });
             }
         } catch (err) {
             server.logger.error("/api/find_game: Failed verifying turnstile: ", err);
-            return c.json<FindGameResponse>({ error: "invalid_captcha" }, 500);
+            return c.json<FindGameResponse>({ type: "error", error: "invalid_captcha" }, 500);
         }
-    }
-
-    const mode = server.modes[body.gameModeIdx];
-    if (!mode || !mode.enabled) {
-        return c.json<FindGameResponse>({ error: "full" });
     }
 
     const playerData = await getFindGamePlayerData([
         {
-            token,
+            joinToken,
             userId: user?.id || null,
             ip,
         },
@@ -174,20 +179,15 @@ app.post("/api/find_game", validateParams(zFindGameBody), async (c) => {
     });
 
     if ("error" in data) {
-        return c.json(data);
+        return c.json<FindGameResponse>({ type: "error", error: data.error });
     }
 
     return c.json<FindGameResponse>({
-        res: [
-            {
-                zone: "",
-                data: token,
-                useHttps: data.useHttps,
-                hosts: data.hosts,
-                addrs: data.addrs,
-                gameId: data.gameId,
-            },
-        ],
+        type: "success",
+        res: {
+            joinToken,
+            urls: data.urls,
+        },
     });
 });
 

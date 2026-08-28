@@ -12,9 +12,9 @@ export class RiverCreator {
 
     constructor(
         public map: GameMap,
-        randomGenerator?: (min?: number, max?: number) => number,
+        randomGenerator: (min?: number, max?: number) => number,
     ) {
-        this.randomGenerator = randomGenerator ?? ((min = 0, max = 1) => Math.random() * (max - min) + min);
+        this.randomGenerator = randomGenerator;
     }
 
     private getStartPoint(isFactionRiver: boolean): Vec2 {
@@ -169,17 +169,6 @@ export class RiverCreator {
             }
         }
 
-        // check for collision with river masks
-        for (let i = 0; i < this.map.riverMasks.length; i++) {
-            const mask = this.map.riverMasks[i];
-            for (let j = 0; j < riverPoints.length; j++) {
-                const circle = collider.createCircle(riverPoints[j], riverWidth * 2);
-                if (coldet.test(circle, mask)) {
-                    return [];
-                }
-            }
-        }
-
         this.handleIntersection(riverPoints);
 
         if (riverPoints.length < 10) {
@@ -201,6 +190,18 @@ export class RiverCreator {
             );
             this.map.clampToMapBounds(smoothPoints[i]);
         }
+
+        // check for collision with river masks
+        for (let i = 0; i < this.map.riverMasks.length; i++) {
+            const mask = this.map.riverMasks[i];
+            for (let j = 0; j < smoothPoints.length; j++) {
+                const circle = collider.createCircle(smoothPoints[j], riverWidth * 2);
+                if (coldet.test(circle, mask)) {
+                    return [];
+                }
+            }
+        }
+
         return smoothPoints;
     }
 

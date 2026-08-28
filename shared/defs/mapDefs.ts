@@ -1,3 +1,4 @@
+import type { MapId } from "../gameConfig.ts";
 import type { Vec2 } from "../utils/v2.ts";
 import type { RoleDef } from "./gameObjects/roleDefs.ts";
 import { Main } from "./maps/baseDefs.ts";
@@ -6,7 +7,7 @@ import { Birthday } from "./maps/birthdayDefs.ts";
 import { Cobalt } from "./maps/cobaltDefs.ts";
 import { Desert } from "./maps/desertDefs.ts";
 import { Faction } from "./maps/factionDefs.ts";
-import { factionPotato } from "./maps/factionPotatoDefs.ts";
+import { FactionPotato } from "./maps/factionPotatoDefs.ts";
 import { Halloween } from "./maps/halloweenDefs.ts";
 import { MainSpring } from "./maps/mainSpringDefs.ts";
 import { MainSummer } from "./maps/mainSummerDefs.ts";
@@ -20,10 +21,8 @@ import { Woods } from "./maps/woodsDefs.ts";
 import { WoodsSnow } from "./maps/woodsSnowDefs.ts";
 import { WoodsSpring } from "./maps/woodsSpringDefs.ts";
 import { WoodsSummer } from "./maps/woodsSummerDefs.ts";
-import type { MapId } from "./types/misc.ts";
 
 export type Atlas =
-    | "gradient"
     | "loadout"
     | "shared"
     | "main"
@@ -44,7 +43,7 @@ const _MapDefs = {
     main_summer: MainSummer,
     desert: Desert,
     faction: Faction,
-    faction_potato: factionPotato,
+    faction_potato: FactionPotato,
     halloween: Halloween,
     potato: Potato,
     potato_spring: PotatoSpring,

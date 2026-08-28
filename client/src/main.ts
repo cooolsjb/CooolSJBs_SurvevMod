@@ -2,7 +2,13 @@ import $ from "jquery";
 import * as PIXI from "pixi.js-legacy";
 import { GameConfig } from "../../shared/gameConfig.ts";
 import * as net from "../../shared/net/net.ts";
-import type { FindGameBody, FindGameError, FindGameMatchData, FindGameResponse } from "../../shared/types/api.ts";
+import type {
+    FindGameBody,
+    FindGameError,
+    FindGameMatchData,
+    FindGameResponse,
+    GameWsDisconnectReason,
+} from "../../shared/types/api.ts";
 import { math } from "../../shared/utils/math.ts";
 import { Account } from "./account.ts";
 import { Ambiance } from "./ambiance.ts";
@@ -342,26 +348,27 @@ export class Application {
                 this.findGameAttempts = 0;
                 this.ambience.onGameStart();
             };
-            const onQuit = (errMsg?: string) => {
+            const onQuit = (errMsg?: GameWsDisconnectReason) => {
                 if (this.game!.m_updatePass) {
                     this.pass.scheduleUpdatePass(this.game!.m_updatePassDelay);
                 }
                 this.game!.free();
-                this.errorMessage = this.localization.translate(errMsg || "");
-                this.teamMenu.onGameComplete();
+                this.errorMessage = errMsg ? this.getErrorString(errMsg, "host_closed") : "";
+                this.teamMenu.onGameComplete(this.errorMessage);
                 this.ambience.onGameComplete(this.audioManager);
                 this.setAppActive(true);
                 this.setPlayLockout(false);
-                if (errMsg == "index-invalid-protocol") {
+
+                if (errMsg == "invalid_protocol") {
                     this.showInvalidProtocolModal();
                 }
-                if (errMsg == "rate_limited") {
-                    this.onJoinGameError(errMsg);
+                if (errMsg == "behind_proxy" || errMsg == "ip_banned") {
+                    this.showErrorModal(errMsg);
                 }
                 if (errMsg) {
-                    this.showErrorModal(errMsg);
                     console.warn("Quitting", errMsg);
                 }
+
                 SDK.gamePlayStop();
             };
             this.game = new Game(
@@ -393,6 +400,8 @@ export class Application {
             loadStaticDomImages();
 
             SDK.gameLoadComplete();
+
+            this.tryJoinGameFromParam();
         }
     }
 
@@ -473,13 +482,12 @@ export class Application {
         });
     }
 
-    onTeamMenuLeave(errTxt = "") {
-        if (errTxt && errTxt != "" && window.history) {
+    onTeamMenuLeave(errTxt?: string) {
+        if (errTxt && window.history) {
             window.history.replaceState("", "", "/");
         }
-        this.showErrorModal(errTxt);
 
-        this.errorMessage = errTxt;
+        this.errorMessage = errTxt || "";
         this.setDOMFromConfig();
         this.refreshUi();
     }
@@ -682,16 +690,16 @@ export class Application {
 
             const tryQuickStartGameImpl = () => {
                 this.waitOnAccount(() => {
-                    this.findGame(matchArgs, (err, matchData, ban) => {
-                        if (err) {
+                    this.findGame(matchArgs, {
+                        error: (err) => {
                             this.onJoinGameError(err);
-                            return;
-                        }
-                        if (ban) {
+                        },
+                        success: (data) => {
+                            this.joinGame(data);
+                        },
+                        ban: (ban) => {
                             this.showIpBanModal(ban);
-                            return;
-                        }
-                        this.joinGame(matchData!);
+                        },
                     });
                 });
             };
@@ -710,15 +718,15 @@ export class Application {
 
     findGame(
         matchArgs: FindGameBody,
-        cb: (
-            err?: FindGameError | null,
-            matchData?: FindGameMatchData,
-            ban?: FindGameResponse & { banned: true },
-        ) => void,
+        cbs: {
+            error: (err: FindGameError) => void;
+            success: (matchData: FindGameMatchData) => void;
+            ban: (data: FindGameResponse & { type: "banned" }) => void;
+        },
     ) {
         const findGameImpl = (iter: number, maxAttempts: number, token: string) => {
             if (iter >= maxAttempts) {
-                cb("full");
+                cbs.error("full");
                 return;
             }
             const retry = () => {
@@ -733,38 +741,21 @@ export class Application {
             };
             matchArgs.turnstileToken = token;
 
-            fetch(api.resolveUrl("/api/find_game"), {
+            fetch(api.resolveUrl("/api/find_game_v2"), {
                 method: "POST",
                 body: JSON.stringify(matchArgs),
                 headers: {
                     "Content-Type": "application/json; charset=utf-8",
                 },
                 credentials: proxy.anyLoginSupported() ? "include" : "omit",
-                signal: AbortSignal.timeout(10 * 1000),
+                signal: helpers.abortSignal(10 * 1000),
             }).then(res => res.json()).then((data: FindGameResponse) => {
-                if (data.error === "invalid_captcha") {
-                    // captch may have failed because the enabled state has changed since site info was loaded
-                    // so force it to true
-                    this.siteInfo.info.captchaEnabled = true;
-                    retry();
-                    return;
-                }
-
-                if (data.error && data.error != "full") {
-                    cb(data.error);
-                    return;
-                }
-
-                if (data.banned) {
-                    cb(null, undefined, data as FindGameResponse & { banned: true });
-                    return;
-                }
-
-                const matchData = data.res ? data.res[0] : null;
-                if (matchData?.hosts && matchData.addrs) {
-                    cb(null, matchData);
-                } else {
-                    retry();
+                if (data.type === "error") {
+                    cbs.error(data.error);
+                } else if (data.type === "banned") {
+                    cbs.ban(data);
+                } else if (data.type === "success") {
+                    cbs.success(data.res);
                 }
             }).catch(() => {
                 retry();
@@ -786,13 +777,8 @@ export class Application {
             }, 250);
             return;
         }
-        const hosts = matchData.hosts || [];
-        const urls: string[] = [];
-        for (let i = 0; i < hosts.length; i++) {
-            urls.push(
-                `ws${matchData.useHttps ? "s" : ""}://${hosts[i]}/play?gameId=${matchData.gameId}`,
-            );
-        }
+        const urls = [...matchData.urls];
+
         const joinGameImpl = (urls: string[], matchData: FindGameMatchData) => {
             const url = urls.shift();
             if (!url) {
@@ -804,21 +790,58 @@ export class Application {
             };
             this.game!.tryJoinGame(
                 url,
-                matchData.data,
+                matchData.joinToken,
                 onFailure,
             );
         };
         joinGameImpl(urls, matchData);
     }
 
-    onJoinGameError(err: FindGameError) {
-        const errMap: Partial<Record<FindGameError, string>> = {
+    tryJoinGameFromParam() {
+        const params = new URLSearchParams(window.location.search);
+        if (params.has("u") && params.has("jt")) {
+            try {
+                const urls = atob(params.get("u")!).split(",");
+                const joinToken = params.get("jt")!;
+
+                this!.joinGame({ urls, joinToken });
+            } catch (e) {
+                console.error("Failed to parse join data:", e);
+                this.onJoinGameError("join_game_failed");
+            }
+
+            params.delete("u");
+            params.delete("jt");
+            window.history.pushState(
+                "",
+                "",
+                params.size ? `${window.location.pathname}?${params.toString()}` : window.location.pathname,
+            );
+        }
+    }
+
+    getErrorString(err: FindGameError | GameWsDisconnectReason, fallback: "host_closed" | "full") {
+        const errMap: Partial<Record<FindGameError | GameWsDisconnectReason, string>> = {
+            banned: this.localization.translate("index-ip-banned"),
+            behind_proxy: this.localization.translate("index-behind-proxy"),
+            find_game_failed: this.localization.translate("index-failed-finding-game"),
             full: this.localization.translate("index-failed-finding-game"),
-            invalid_protocol: this.localization.translate("index-invalid-protocol"),
+            host_closed: this.localization.translate("index-host-closed"),
             invalid_captcha: this.localization.translate("index-invalid-captcha"),
+            invalid_packet: this.localization.translate("index-invalid-packet"),
+            invalid_protocol: this.localization.translate("index-invalid-protocol"),
+            invalid_token: this.localization.translate("index-invalid-token"),
+            ip_banned: this.localization.translate("index-ip-banned"),
             join_game_failed: this.localization.translate("index-failed-joining-game"),
+            player_not_found: this.localization.translate("index-player-not-found"),
             rate_limited: this.localization.translate("index-rate-limited"),
+            server_crashed: this.localization.translate("index-server-crashed"),
+            server_restart: this.localization.translate("index-server-restart"),
         };
+        return errMap[err] || errMap[fallback]!;
+    }
+
+    onJoinGameError(err: FindGameError) {
         if (err == "invalid_protocol") {
             this.showInvalidProtocolModal();
         }
@@ -829,9 +852,11 @@ export class Application {
         if (err === "invalid_captcha") {
             this.siteInfo.info.captchaEnabled = true;
         }
-        this.showErrorModal(err);
+        if (err == "behind_proxy" || err == "banned") {
+            this.showErrorModal(err);
+        }
 
-        this.errorMessage = errMap[err] || errMap.full!;
+        this.errorMessage = this.getErrorString(err, "full");
         this.quickPlayPendingModeIdx = -1;
         this.teamMenu.leave("join_game_failed");
         this.refreshUi();
@@ -841,7 +866,7 @@ export class Application {
         this.refreshModal.show(true);
     }
 
-    showIpBanModal(ban: FindGameResponse & { banned: true }) {
+    showIpBanModal(ban: FindGameResponse & { type: "banned" }) {
         $("#modal-ip-banned-reason").text(`Reason: ${ban.reason}`);
 
         let expiration = "Duration: indefinite";
@@ -870,15 +895,8 @@ export class Application {
         this.refreshUi();
     }
 
-    showErrorModal(err: string) {
-        const typeText: Record<string, string> = {
-            // TODO: translate those?
-            behind_proxy: this.localization.translate("index-behind-proxy"),
-            ip_banned: this.localization.translate("index-ip-banned"),
-        };
-
-        const text = typeText[err];
-
+    showErrorModal(err: FindGameError | GameWsDisconnectReason) {
+        const text = this.getErrorString(err, "full");
         if (text) {
             this.errorModal.selector.find(".modal-body-text").html(text);
             this.errorModal.show();

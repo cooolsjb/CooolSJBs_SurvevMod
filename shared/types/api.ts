@@ -15,12 +15,8 @@ export const zFindGameBody = z.object({
 export type FindGameBody = z.infer<typeof zFindGameBody>;
 
 export interface FindGameMatchData {
-    zone: string;
-    gameId: string;
-    useHttps: boolean;
-    hosts: string[];
-    addrs: string[];
-    data: string;
+    urls: string[];
+    joinToken: string;
 }
 
 export const loadoutSchema = z.object({
@@ -39,39 +35,51 @@ export const loadoutSchema = z.object({
 });
 
 export type FindGameError =
-    | "invalid_ip"
-    | "find_game_failed"
-    | "mode_disabled"
-    | "invalid_region"
-    | "full"
-    | "invalid_protocol"
-    | "join_game_failed"
-    | "rate_limited"
     | "banned"
     | "behind_proxy"
-    | "invalid_captcha";
+    | "find_game_failed"
+    | "full"
+    | "invalid_captcha"
+    | "invalid_ip"
+    | "invalid_protocol"
+    | "invalid_region"
+    | "join_game_failed"
+    | "mode_disabled"
+    | "rate_limited";
+
+export type FindGamePrivateError =
+    | "find_game_failed"
+    | "full"
+    | "invalid_protocol"
+    | "invalid_region";
+
+export type GameWsDisconnectReason =
+    | "behind_proxy"
+    | "full"
+    | "host_closed"
+    | "invalid_packet"
+    | "invalid_protocol"
+    | "invalid_token"
+    | "ip_banned"
+    | "player_not_found"
+    | "rate_limited"
+    | "server_crashed"
+    | "server_restart";
 
 export type FindGameResponse =
     | {
-        res: FindGameMatchData[];
-        error?: undefined;
-
-        banned?: undefined;
+        type: "success";
+        res: FindGameMatchData;
     }
     | {
+        type: "error";
         error: FindGameError;
-
-        res?: undefined;
-        banned?: undefined;
     }
     | {
-        banned: true;
+        type: "banned";
         reason: string;
         permanent: boolean;
         expiresIn: Date | string;
-
-        res?: undefined;
-        error?: undefined;
     };
 
 export interface SiteInfoRes {

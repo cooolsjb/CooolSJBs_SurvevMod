@@ -2,7 +2,6 @@ import type { AtlasDef } from "../atlasDefs.ts";
 import { BuildingSprites } from "./buildings.ts";
 
 export const HalloweenAtlas: AtlasDef = {
-    compress: true,
     images: [
         ...BuildingSprites.bunker_eye,
 
@@ -29,5 +28,6 @@ export const HalloweenAtlas: AtlasDef = {
         "map/map-tree-08.svg",
 
         "map/map-web-01.svg",
+        "map/map-light-01.svg",
     ],
 };

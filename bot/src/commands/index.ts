@@ -3,6 +3,7 @@ import {
     type ChatInputCommandInteraction,
     type SlashCommandOptionsOnlyBuilder,
 } from "discord.js";
+import { z } from "zod";
 import { zSetClientThemeBody, zSetGameModeBody } from "../../../server/src/utils/types.ts";
 import {
     zBanAccountParams,
@@ -22,6 +23,7 @@ import {
 import { Command } from "../utils.ts";
 import { createCommand, createSlashCommand, genericExecute } from "./helpers.ts";
 import { searchPlayersHandler } from "./search-player.ts";
+import { spectateCommandHandler } from "./spectate-player.ts";
 
 /**
  * for generic commands that only makes an api call and return it's meessage
@@ -347,6 +349,14 @@ const commands = {
             },
         ],
     }),
+    [Command.ClearCache]: createCommand({
+        name: Command.ClearCache,
+        description: "Clears the leaderboard cache",
+        optionValidator: z.object(),
+        requiresAdmin: true,
+        isPrivateRoute: true,
+        options: [],
+    }),
 } as unknown as Record<
     Exclude<Command, "search_player">,
     ReturnType<typeof createCommand>
@@ -373,6 +383,7 @@ export const commandHandlers: CommandHandlers = (
     {
         // add non generic commands here
         [Command.SearchPlayer]: searchPlayersHandler.execute,
+        [Command.SpectatePlayer]: spectateCommandHandler.execute,
     } as CommandHandlers,
 );
 
@@ -380,4 +391,5 @@ export const commandsToRegister: SlashCommandOptionsOnlyBuilder[] = [
     ...Object.values(commands).map(createSlashCommand),
     // add non generic commands here
     searchPlayersHandler.command,
+    spectateCommandHandler.command,
 ];

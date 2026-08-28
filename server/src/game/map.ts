@@ -1,9 +1,10 @@
 import { styleText } from "node:util";
 import { type MapDef, MapDefs } from "../../../shared/defs/mapDefs.ts";
-import type { BuildingDef, ObstacleDef, StructureDef } from "../../../shared/defs/mapObjectsTyping.ts";
+import type { BuildingDef } from "../../../shared/defs/mapObjects/buildings/buildingDefs.ts";
+import type { ObstacleDef } from "../../../shared/defs/mapObjects/obstacles/obstacleDefs.ts";
+import type { StructureDef } from "../../../shared/defs/mapObjects/structureDefs.ts";
 import { MapObjectDefs } from "../../../shared/defs/register.ts";
-import type { MapId } from "../../../shared/defs/types/misc.ts";
-import { GameConfig, TeamMode } from "../../../shared/gameConfig.ts";
+import { GameConfig, MapId, TeamMode } from "../../../shared/gameConfig.ts";
 import * as net from "../../../shared/net/net.ts";
 import { MsgStream, MsgType } from "../../../shared/net/net.ts";
 import { ObjectType } from "../../../shared/net/objectSerializeFns.ts";
@@ -229,8 +230,10 @@ export class GameMap {
      * Like auto opening doors, regrowing potatos, etc
      */
     dynamicObstacles!: Obstacle[];
+
     buildings!: Building[];
-    buildingsWithEmitters!: Building[];
+    dynamicBuildings!: Building[];
+
     structures!: Structure[];
     bridges!: Structure[];
     grid!: MapGrid;
@@ -307,11 +310,12 @@ export class GameMap {
 
     init(seed?: number) {
         this.seed = seed ?? util.randomInt(0, 2 ** 32 - 1);
+        this.game.logger.debug("Generating map with seed", this.seed);
 
         this.obstacles = [];
         this.dynamicObstacles = [];
         this.buildings = [];
-        this.buildingsWithEmitters = [];
+        this.dynamicBuildings = [];
         this.structures = [];
         this.bridges = [];
         this.riverDescs = [];
@@ -423,47 +427,8 @@ export class GameMap {
             this.dynamicObstacles[i].update(dt);
         }
 
-        for (let i = 0; i < this.buildingsWithEmitters.length; i++) {
-            const building = this.buildingsWithEmitters[i];
-
-            const oldOccupiedState = building.occupied;
-
-            building.occupied = false;
-
-            const livingPlayers = this.game.playerBarn.livingPlayers;
-            const players = livingPlayers.length < 20
-                ? livingPlayers
-                : this.game.grid.intersectCollider(building.emitterBounds);
-
-            for (let j = 0; j < players.length; j++) {
-                const player = players[j];
-                if (player.__type !== ObjectType.Player) continue;
-                if (player.dead) continue;
-                if (!util.sameLayer(player.layer, building.layer)) continue;
-                for (let k = 0; k < building.zoomRegions.length; k++) {
-                    const region = building.zoomRegions[k];
-
-                    if (!region.zoomIn) continue;
-                    if (
-                        coldet.testCircleAabb(
-                            player.pos,
-                            player.rad,
-                            region.zoomIn.min,
-                            region.zoomIn.max,
-                        )
-                    ) {
-                        building.occupied = true;
-                        break;
-                    }
-                }
-                if (building.occupied) {
-                    break;
-                }
-            }
-
-            if (building.occupied !== oldOccupiedState) {
-                building.setPartDirty();
-            }
+        for (let i = 0; i < this.dynamicBuildings.length; i++) {
+            this.dynamicBuildings[i].update(dt);
         }
 
         for (let i = this.unlocks.length - 1; i >= 0; i--) {
@@ -707,15 +672,22 @@ export class GameMap {
                         return false;
                     }
                 }
+                if (lakeDef.riverMaskRad) {
+                    const mask = collider.createCircle(
+                        lake.center,
+                        lakeDef.riverMaskRad,
+                    );
+                    for (const otherMask of this.riverMasks) {
+                        if (coldet.test(mask, otherMask)) {
+                            return false;
+                        }
+                    }
+
+                    this.riverMasks.push(mask);
+                }
 
                 this.riverDescs.push(lake);
                 this.lakeObjs.push(lakeDef.centerObj ?? "");
-                if (lakeDef.riverMaskRad) {
-                    this.riverMasks.push(collider.createCircle(
-                        lake.center,
-                        lakeDef.riverMaskRad,
-                    ));
-                }
                 return true;
             });
         }
@@ -1234,9 +1206,9 @@ export class GameMap {
     }
 
     /**
-     * Helper to not reapeat the stupid while loop everywhere
+     * Helper to not repeat the stupid while loop everywhere
      * @param type The type of thing you are trying to spawn, used to show a log when it fails
-     * @param cb The callback to spawn it, it should return true on a sucessful spawn attempt to break the loop
+     * @param cb The callback to spawn it, it should return true on a successful spawn attempt to break the loop
      * @param maxAttempts I dont have to explain this one
      * @param logOnFailure I think i also dont have to explain this one
      * @returns True when it spawned successfully, false otherwise
@@ -1251,7 +1223,6 @@ export class GameMap {
         let attempts = 0;
         while (attempts < maxAttempts) {
             if (cb()) {
-                // if (attempts > 50) console.log(type, attempts);
                 return true;
             }
             attempts++;
@@ -1469,7 +1440,7 @@ export class GameMap {
         const def = MapObjectDefs.typeToDef(type);
         if (def.type === "building" || def.type === "structure") {
             if ("oris" in def && def.oris?.length) {
-                ori = util.randomItem(def.oris, rand)!;
+                ori = util.randomItem(def.oris, rand);
             } else {
                 ori = def.ori ?? util.randomInt(0, 3, rand);
             }
@@ -1723,26 +1694,26 @@ export class GameMap {
             scale = oriAndScale.scale;
 
             const t = util.random(0, 1);
-            let finalRiver = river ?? rivers[util.randomInt(0, rivers.length - 1)];
+            const selectedRiver = river ?? util.randomItem(rivers);
 
-            let pos = finalRiver.spline.getPos(t);
+            let pos = selectedRiver.spline.getPos(t);
 
             if (def.terrain?.nearbyRiver) {
                 const otherSide = Math.random() < 0.5;
 
-                const offset = finalRiver.waterWidth * 2 * (otherSide ? -1 : 1);
-                let norm = finalRiver.spline.getNormal(t);
+                const offset = selectedRiver.waterWidth * 2 * (otherSide ? -1 : 1);
+                let norm = selectedRiver.spline.getNormal(t);
                 v2.set(pos, v2.add(pos, v2.mul(norm, offset)));
 
-                const finalT = finalRiver.spline.getClosestTtoPoint(pos);
-                const finalNorm = finalRiver.spline.getNormal(finalT);
+                const finalT = selectedRiver.spline.getClosestTtoPoint(pos);
+                const finalNorm = selectedRiver.spline.getNormal(finalT);
 
                 const riverOri = (math.radToOri(Math.atan2(finalNorm.y, finalNorm.x))
                     + (otherSide ? 2 : 0))
                     % 4;
                 ori = (def.terrain.nearbyRiver.facingOri + riverOri) % 4;
             } else {
-                const norm = finalRiver.spline.getNormal(t);
+                const norm = selectedRiver.spline.getNormal(t);
                 ori = math.radToOri(Math.atan2(norm.y, norm.x));
             }
             if (type === "bunker_structure_05") {
@@ -1777,7 +1748,7 @@ export class GameMap {
         if (!rivers.length) return;
 
         this.trySpawn(type, () => {
-            const selectedRiver = river ?? util.randomItem(rivers)!;
+            const selectedRiver = river ?? util.randomItem(rivers);
             const t = util.random(0, 1);
             const def = MapObjectDefs.typeToDef(type);
 
@@ -1811,17 +1782,17 @@ export class GameMap {
         if (!rivers.length) return;
 
         this.trySpawn(type, () => {
-            river = river ?? rivers[util.randomInt(0, rivers.length - 1)];
+            const selectedRiver = river ?? util.randomItem(rivers);
             const t = util.random(0, 1);
 
-            let width = river.getWaterWidth(t);
+            let width = selectedRiver.getWaterWidth(t);
 
-            let offset = util.random(width, width + river.shoreWidth);
+            let offset = util.random(width, width + selectedRiver.shoreWidth);
             if (Math.random() < 0.5) offset *= -1;
 
             const pos = v2.add(
-                river.spline.getPos(t),
-                v2.mul(river.spline.getNormal(t), offset),
+                selectedRiver.spline.getPos(t),
+                v2.mul(selectedRiver.spline.getNormal(t), offset),
             );
 
             const { ori, scale } = this.getOriAndScale(type);
@@ -1851,7 +1822,7 @@ export class GameMap {
 
         this.trySpawn(type, () => {
             const t = util.random(0.1, 0.9);
-            const river = this.normalRivers[util.randomInt(0, this.normalRivers.length - 1)];
+            const river = util.randomItem(this.normalRivers);
             let pos = river.spline.getPos(t);
 
             const otherSide = Math.random() < 0.5;
@@ -1949,7 +1920,7 @@ export class GameMap {
         return obstacle;
     }
 
-    genOutfitObstacle(type: string, player: Player) {
+    genOutfitObstacle(type: string, player: Player, scale?: number) {
         const def = MapObjectDefs.typeToDef(type, "obstacle");
 
         const obstacle = new Obstacle(
@@ -1958,7 +1929,7 @@ export class GameMap {
             type,
             player.layer,
             0,
-            def.scale.createMax,
+            scale ?? def.scale.createMax,
             undefined,
             undefined,
             true,
@@ -1997,8 +1968,8 @@ export class GameMap {
 
         this.game.objectRegister.register(building);
         this.buildings.push(building);
-        if (building.hasOccupiedEmitters) {
-            this.buildingsWithEmitters.push(building);
+        if (building.hasOccupiedEmitters || building.hasPuzzle) {
+            this.dynamicBuildings.push(building);
         }
 
         if (def.map?.display && layer === 0 && !hideFromMap) {
@@ -2422,46 +2393,45 @@ export class GameMap {
     isOnWater(pos: Vec2, layer: number) {
         const objs = this.game.grid.intersectPos(pos);
 
-        // Check decals
-        for (let i = 0; i < objs.length; i++) {
-            const decal = objs[i];
-            if (decal.__type !== ObjectType.Decal) continue;
-            if (!decal.surface) {
-                continue;
-            }
-
-            if (
-                util.sameLayer(decal.layer, layer)
-                && collider.intersectCircle(decal.collider!, pos, 0.0001)
-            ) {
-                return decal.surface === "water";
-            }
-        }
-
-        // Check buildings
         let surface = null;
         let zIdx = 0;
         const onStairs = layer & 0x2;
 
         for (let i = 0; i < objs.length; i++) {
-            const building = objs[i];
-            if (building.__type !== ObjectType.Building) continue;
-            if (building.zIdx < zIdx) {
+            const obj = objs[i];
+
+            // Check decals
+            if (obj.__type === ObjectType.Decal) {
+                if (!obj.surface) {
+                    continue;
+                }
+                if (
+                    util.sameLayer(obj.layer, layer)
+                    && collider.intersectCircle(obj.collider!, pos, 0.0001)
+                ) {
+                    return obj.surface === "water";
+                }
+                continue;
+            }
+
+            // Check buildings
+            if (obj.__type !== ObjectType.Building) continue;
+            if (obj.zIdx < zIdx) {
                 continue;
             }
             // Prioritize layer0 building surfaces when on stairs
             if (
-                (building.layer !== layer && !onStairs)
-                || (building.layer === 1 && onStairs)
+                (obj.layer !== layer && !onStairs)
+                || (obj.layer === 1 && onStairs)
             ) {
                 continue;
             }
-            for (let j = 0; j < building.surfaces.length; j++) {
-                const s = building.surfaces[j];
+            for (let j = 0; j < obj.surfaces.length; j++) {
+                const s = obj.surfaces[j];
                 for (let k = 0; k < s.colliders.length; k++) {
                     const res = collider.intersectCircle(s.colliders[k], pos, 0.0001);
                     if (res) {
-                        zIdx = building.zIdx;
+                        zIdx = obj.zIdx;
                         surface = s;
                         break;
                     }

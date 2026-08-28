@@ -1,31 +1,20 @@
-import { DisconnectMsg } from "../../../shared/net/disconnectMsg.ts";
-import { MsgStream, MsgType } from "../../../shared/net/net.ts";
+import type { GameWsDisconnectReason } from "../../../shared/types/api";
 
-export abstract class ClientSocket<T> {
-    private _userData!: T;
+export abstract class ClientSocket<T extends object> {
+    private _userData?: WeakRef<T>;
     setUserData(data: T) {
-        this._userData = data;
+        this._userData = new WeakRef(data);
     }
-    getUserData(): T {
-        return this._userData;
+    getUserData(): T | undefined {
+        return this._userData?.deref();
     }
     abstract ip(): string;
     abstract closed(): boolean;
     abstract send(data: Uint8Array<ArrayBuffer>): void;
-    abstract close(): void;
-
-    closeWithReason(reason: string) {
-        const msg = new DisconnectMsg();
-        msg.reason = reason;
-        const buff = new ArrayBuffer(128);
-        const stream = new MsgStream(buff);
-        stream.serializeMsg(MsgType.Disconnect, msg);
-        this.send(stream.getBuffer());
-        this.close();
-    }
+    abstract close(reason?: GameWsDisconnectReason): void;
 }
 
-export class NoOpSocket<T> extends ClientSocket<T> {
+export class NoOpSocket<T extends object> extends ClientSocket<T> {
     private _closed = false;
     ip(): string {
         return "";

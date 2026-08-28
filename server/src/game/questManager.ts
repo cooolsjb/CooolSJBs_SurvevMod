@@ -1,7 +1,6 @@
 import { type QuestDef, QuestDefs } from "../../../shared/defs/gameObjects/questDefs.ts";
-import type { ObstacleDef } from "../../../shared/defs/mapObjectsTyping.ts";
 import { GameObjectDefs, MapObjectDefs } from "../../../shared/defs/register.ts";
-import { TeamModeToString } from "../../../shared/defs/types/misc.ts";
+import type { TeamMode } from "../../../shared/gameConfig.ts";
 import { MsgType, UpdatePassMsg } from "../../../shared/net/net.ts";
 import { assert } from "../../../shared/utils/util.ts";
 import type { Game } from "./game.ts";
@@ -56,7 +55,7 @@ export class QuestManager {
 
         this.trackEvent("placement", {
             rank: teamRank,
-            mode: TeamModeToString[this.game.teamMode],
+            mode: this.game.teamMode,
         });
     }
 
@@ -119,7 +118,7 @@ export interface QuestEventPayloads {
     kill: { weaponType: string; buildingType: string };
     damage: { amount: number; weaponType: string };
     survived: { seconds: number };
-    placement: { rank: number; mode: "solo" | "duo" | "squad" };
+    placement: { rank: number; mode: TeamMode };
     item_used: { itemType: string };
     destruction: { objectType: string };
 }
@@ -208,8 +207,8 @@ export function questDelta<E extends keyof QuestEventPayloads>(
                 return 0;
             }
 
-            const objectDef = MapObjectDefs.typeToDefSafe(p.objectType) as ObstacleDef | undefined;
-            if (objectDef?.obstacleType) {
+            const objectDef = MapObjectDefs.typeToDefSafe(p.objectType);
+            if (objectDef?.type === "obstacle" && objectDef.obstacleType) {
                 value = objectDef.obstacleType === obstacleType ? 1 : 0;
                 break;
             }

@@ -2,11 +2,10 @@ import { GameConfig } from "../../gameConfig.ts";
 import { util } from "../../utils/util.ts";
 import { v2 } from "../../utils/v2.ts";
 import type { MapDef } from "../mapDefs.ts";
-import { MapId } from "../types/misc.ts";
 import { Main, type PartialMapDef } from "./baseDefs.ts";
 
 const mapDef: PartialMapDef = {
-    mapId: MapId.Desert,
+    mapId: GameConfig.MapId.Desert,
     desc: {
         name: "Desert",
         icon: "img/loot/loot-weapon-flare-gun.svg",
@@ -24,7 +23,7 @@ const mapDef: PartialMapDef = {
             { name: "potato_pickup_01", channel: "ui" },
             { name: "piano_music_01", channel: "ambient" },
         ],
-        atlases: ["gradient", "loadout", "shared", "desert"],
+        atlases: ["loadout", "shared", "desert"],
     },
     biome: {
         colors: {
@@ -206,6 +205,27 @@ const mapDef: PartialMapDef = {
             { name: "bonus_45", count: 1, weight: 1 },
             { name: "amped_explosives", count: 1, weight: 1 },
             { name: "explosive", count: 1, weight: 1 },
+        ],
+        tier_crow_case_melee: [
+            { name: "crowbar", count: 1, weight: 1 },
+            { name: "stonehammer", count: 1, weight: 1 },
+        ],
+        tier_pirate_rare: [
+            { name: "m1911", count: 1, weight: 1 },
+            { name: "m4a1", count: 1, weight: 1.25 },
+            { name: "scar", count: 1, weight: 1.25 },
+            { name: "flare_gun_dual", count: 1, weight: 0.75 },
+            { name: "garand", count: 1, weight: 1 },
+            { name: "mosin", count: 1, weight: 1 },
+            { name: "deagle", count: 1, weight: 1 },
+            { name: "sw500", count: 1, weight: 1 },
+            { name: "saiga", count: 1, weight: 1 },
+            { name: "ash12", count: 1, weight: 0.5 },
+            { name: "deagle_dual", count: 1, weight: 0.5 },
+            { name: "sv98", count: 1, weight: 0.3 },
+            { name: "barrett", count: 1, weight: 0.3 },
+            { name: "awc", count: 1, weight: 0.3 },
+            { name: "m249", count: 1, weight: 0.25 },
         ],
     },
     mapGen: {

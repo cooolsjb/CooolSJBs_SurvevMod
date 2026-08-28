@@ -82,9 +82,12 @@ export type DebugRenderOpts = typeof debugRenderConfig;
 export const BuildingEditorConfig = {
     zoom: 1,
     pos: v2.create(0, 0),
+    layer: 0,
     object: "house_red_01",
+    ori: 0,
     map: "main" as MapDefKey,
-    grid: true,
+    hideCeilings: false,
+    showGrid: true,
 };
 
 const defaultConfig = {

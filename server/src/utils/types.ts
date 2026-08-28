@@ -1,7 +1,8 @@
 import { z } from "zod";
 import type { MapDefKey } from "../../../shared/defs/mapDefs.ts";
 import { TeamMode } from "../../../shared/gameConfig.ts";
-import { type FindGameError, loadoutSchema } from "../../../shared/types/api.ts";
+import { type FindGameMatchData, type FindGamePrivateError, loadoutSchema } from "../../../shared/types/api.ts";
+import { zSpectateFilter } from "../../../shared/types/moderation.ts";
 import type { MatchDataTable } from "../api/db/schema.ts";
 
 export const zUpdateRegionBody = z.object({
@@ -40,7 +41,7 @@ export const zFindGamePrivateBody = z.object({
     teamMode: z.number(),
     playerData: z.array(
         z.object({
-            token: z.string(),
+            joinToken: z.string(),
             userId: z.string().nullable(),
             ip: z.string(),
             loadout: loadoutSchema.optional(),
@@ -53,9 +54,26 @@ export type FindGamePrivateBody = z.infer<typeof zFindGamePrivateBody>;
 
 export type FindGamePrivateRes =
     | {
-        gameId: string;
-        useHttps: boolean;
-        hosts: string[];
-        addrs: string[];
+        urls: string[];
     }
-    | { error: FindGameError };
+    | { error: FindGamePrivateError };
+
+export type SpectateGamePrivateRes = {
+    players: Array<{
+        gameId: string;
+        mapName: MapDefKey;
+        teamMode: TeamMode;
+        data: FindGameMatchData;
+    }>;
+};
+
+export type ModRouterSpectateGameRes = SpectateGamePrivateRes & {
+    region: string;
+    done: boolean;
+};
+
+export const zSpectateGamePrivateBody = z.object({
+    filter: zSpectateFilter,
+});
+
+export type SpectateGamePrivateBody = z.infer<typeof zSpectateGamePrivateBody>;

@@ -104,27 +104,8 @@ export const PrivateRouter = new Hono<Context>()
             return c.json({ error: "Empty match data" }, 400);
         }
 
-        const gameIds = [...new Set(data.matchData.map((d) => d.gameId))];
+        await db.insert(matchDataTable).values(matchData).onConflictDoNothing();
 
-        // i really don't want the game server to insert duplicated games by accident
-        // when saving lost game data...
-        const exists = await db
-            .selectDistinct({
-                gameId: matchDataTable.gameId,
-            })
-            .from(matchDataTable)
-            .where(inArray(matchDataTable.gameId, gameIds));
-
-        if (exists.length) {
-            return c.json(
-                {
-                    error: `Games [${exists.map((d) => d.gameId).join(",")}] are already inserted`,
-                },
-                400,
-            );
-        }
-
-        await db.insert(matchDataTable).values(matchData);
         await logPlayerIPs(matchData);
         try {
             await leaderboardCache.invalidateCache(matchData);
@@ -294,7 +275,7 @@ export const PrivateRouter = new Hono<Context>()
     .post("/clear_cache", async (c) => {
         const client = await getRedisClient();
         await client.flushAll();
-        return c.json({ success: true }, 200);
+        return c.json({ message: "Successfully cleared leaderboard cache" }, 200);
     })
     .post(
         "/check_ip",
