@@ -81,7 +81,7 @@ const BaseDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-base-outfitJelly.img",
         },
         lootImg: {
-            sprite: "loot-shirt-01.img",
+            sprite: "loot-shirt-02.img",
             tint: 0xffffff,
             border: "loot-circle-outer-01.img",
             borderTint: 0,
@@ -115,8 +115,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-outfitJelly.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitJellyPink.img",
-            tint: 0xffffff,
+            sprite: "loot-shirt-02.img",
+            tint: 0xdf6da9,
         },
     }),
     outfitJellyBlue: defineOutfitSkin("outfitJelly", {
@@ -134,8 +134,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-outfitJelly.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitJellyBlue.img",
-            tint: 0xffffff,
+            sprite: "loot-shirt-02.img",
+            tint: 0x526ee0,
         },
     }),
     outfitJellyOrange: defineOutfitSkin("outfitJelly", {
@@ -153,8 +153,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-outfitJelly.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitJellyOrange.img",
-            tint: 0xffffff,
+            sprite: "loot-shirt-02.img",
+            tint: 0xff874c,
         },
     }),
     outfitJellyRed: defineOutfitSkin("outfitJelly", {
@@ -172,8 +172,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-outfitJelly.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitJellyRed.img",
-            tint: 0xffffff,
+            sprite: "loot-shirt-02.img",
+            tint: 0xf65656,
         },
     }),
     outfitJellyStealth: defineOutfitSkin("outfitJelly", {
@@ -191,8 +191,8 @@ const SkinDefs: Record<string, OutfitDef> = {
             backpackSprite: "player-circle-outfitJelly.img",
         },
         lootImg: {
-            sprite: "loot-shirt-outfitJellyStealth.img",
-            tint: 0xffffff,
+            sprite: "loot-shirt-02.img",
+            tint: 0x80af49,
         },
         ghillie: true
     }),
