@@ -10,8 +10,8 @@ import { InteractableDefs } from "./interactableDefs.ts";
 import { MapObstacleDefs } from "./mapObstacleDefs.ts";
 
 export interface ObstacleDef {
-    readonly type: "obstacle";
-    obstacleType?: string;
+    type: "obstacle";
+    category?: string;
     scale: {
         createMin: number;
         createMax: number;

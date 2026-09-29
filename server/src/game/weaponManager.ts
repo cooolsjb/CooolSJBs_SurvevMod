@@ -59,6 +59,8 @@ export class WeaponManager {
 
     meleeAttacks: number[] = [];
 
+    meleeAnimCooldown = 0;
+
     get cookingThrowable() {
         return this.player.animType === GameConfig.Anim.Cook;
     }
@@ -133,12 +135,12 @@ export class WeaponManager {
         const nextWeapon = this.weapons[idx];
         let effectiveSwitchDelay = 0;
 
+        const nextWeaponDef = GameObjectDefs.typeToDef(this.weapons[idx].type) as
+            | GunDef
+            | MeleeDef
+            | ThrowableDef;
         if (curWeapon.type && nextWeapon.type) {
             // ensure that player is still holding both weapons (didnt drop one)
-            const nextWeaponDef = GameObjectDefs.typeToDef(this.weapons[idx].type) as
-                | GunDef
-                | MeleeDef
-                | ThrowableDef;
 
             const swappingToGun = nextWeaponDef.type == "gun";
 
@@ -151,10 +153,9 @@ export class WeaponManager {
 
             if (
                 swappingToGun
-                // @ts-expect-error All combinations of non-identical non-zero values (including undefined)
-                //                  give NaN or a number not equal to 1, meaning that this correctly checks
-                //                  for two identical non-zero numerical deploy groups
-                && curWeaponDef.deployGroup / nextWeaponDef.deployGroup === 1
+                && nextWeaponDef.deployGroup !== undefined
+                && (curWeaponDef as GunDef).deployGroup !== undefined
+                && nextWeaponDef.deployGroup === (curWeaponDef as GunDef).deployGroup
                 && curWeapon.cooldown > 0
             ) {
                 effectiveSwitchDelay = nextWeaponDef.switchDelay;
@@ -187,6 +188,10 @@ export class WeaponManager {
 
         if (idx === this.curWeapIdx && WeaponSlot[idx] == "gun") {
             this.offHand = false;
+        }
+
+        if (nextWeaponDef.type === "melee") {
+            this.playMeleeDeployAnim();
         }
 
         this.player.setDirty();
@@ -229,6 +234,13 @@ export class WeaponManager {
                     || weaponDef!.type === "melee"
                     || weaponDef!.type === "throwable",
             );
+        }
+        if (
+            isMelee
+            && (this.player.animType === GameConfig.Anim.DeployMelee
+                || this.player.animType === GameConfig.Anim.IdleMelee)
+        ) {
+            this.player.cancelAnim();
         }
 
         // can't wear pan if you're replacing it with another melee
@@ -292,6 +304,7 @@ export class WeaponManager {
 
         player.recoilTicker += dt;
 
+        this.meleeAnimCooldown -= dt;
         this.throwableCooldown -= dt;
 
         for (let i = 0; i < this.weapons.length; i++) {
@@ -415,6 +428,28 @@ export class WeaponManager {
                 i--;
             }
         }
+    }
+
+    playMeleeDeployAnim() {
+        if (this.player.animType !== GameConfig.Anim.None) return;
+        if (this.player.curWeapIdx !== GameConfig.WeaponSlot.Melee) return;
+        const def = GameObjectDefs.typeToDef(this.activeWeapon, "melee");
+        if (!def.anim.deployAnims?.length) return;
+        if (this.player.downed) return;
+
+        this.player.playAnim(GameConfig.Anim.DeployMelee, def.anim.deployAnimTime + 0.1);
+    }
+
+    playMeleeIdleAnim() {
+        if (this.player.animType !== GameConfig.Anim.None) return;
+        if (this.player.curWeapIdx !== GameConfig.WeaponSlot.Melee) return;
+        if (this.meleeAnimCooldown > 0) return;
+        const def = GameObjectDefs.typeToDef(this.activeWeapon, "melee");
+        if (!def.anim.idleAnims?.length) return;
+        if (this.player.downed) return;
+
+        this.player.playAnim(GameConfig.Anim.IdleMelee, def.anim.idleAnimTime + 0.1);
+        this.meleeAnimCooldown = def.anim.idleAnimTime + 1;
     }
 
     getAmmoStats(weaponDef: GunDef): {
@@ -797,7 +832,7 @@ export class WeaponManager {
         }
 
         if (shouldApplyChambered) {
-            damageMult *= 1.25;
+            damageMult *= PerkProperties.chambered.damageMult;
         }
 
         //
@@ -837,8 +872,16 @@ export class WeaponManager {
         const bulletCount = itemDef.bulletCount;
         const jitter = itemDef.jitter ?? 0.25;
 
+        const bonus45 = itemDef.ammo === "45acp" && this.player.hasPerk("bonus_45");
+
         for (let i = 0; i < bulletCount; i++) {
-            const deviation = firstShotAccuracy
+            const empowered45 = bonus45 && Math.random() < PerkProperties.bonus_45.empoweredChance;
+            if (empowered45) {
+                damageMult *= PerkProperties.bonus_45.empoweredDamageMult;
+                speedMult *= PerkProperties.bonus_45.empoweredSpeedMult;
+            }
+
+            const deviation = (empowered45 || firstShotAccuracy)
                 ? 0
                 : util.random(-0.5, 0.5) * (spread || 0);
             const shotDir = v2.rotate(direction, math.deg2rad(deviation));
@@ -892,7 +935,7 @@ export class WeaponManager {
                 shotOffhand: offHand,
                 trailSaturated: shouldApplyChambered || saturated > 1,
                 trailSmall: false,
-                trailThick: shouldApplyChambered,
+                trailThick: shouldApplyChambered || empowered45,
                 reflectCount: 0,
                 splinter: hasSplinter,
                 apRounds: hasApRounds,
@@ -921,6 +964,7 @@ export class WeaponManager {
                     projDef.fuseTime,
                     GameConfig.DamageType.Player,
                     shotDir,
+                    this.activeWeapon,
                 );
             }
 

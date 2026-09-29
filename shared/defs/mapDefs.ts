@@ -1,6 +1,8 @@
-import type { MapId } from "../gameConfig.ts";
+import { type GameConfig, type MapId } from "../gameConfig.ts";
+import type { DeepPartial } from "../utils/util.ts";
 import type { Vec2 } from "../utils/v2.ts";
 import type { RoleDef } from "./gameObjects/roleDefs.ts";
+import type { SurfaceType } from "./mapObjectsTyping.ts";
 import { Main } from "./maps/baseDefs.ts";
 import { Beach } from "./maps/beachDefs.ts";
 import { Birthday } from "./maps/birthdayDefs.ts";
@@ -101,12 +103,18 @@ export interface MapDef {
         };
         valueAdjust: number;
         sound: {
-            riverShore: string;
+            riverShore: SurfaceType;
         };
         particles: {
             camera: string;
         };
-        tracerColors: Record<string, Record<string, number>>;
+        ambience: {
+            music: string;
+            wind: string;
+            river: string;
+            waves: string;
+        };
+        tracerColors: DeepPartial<typeof GameConfig["tracerColors"]>;
         airdrop: {
             planeImg: string;
             planeSound: string;
@@ -165,7 +173,7 @@ export interface MapDef {
                 wait: number;
             }>;
         };
-        bagSizes: Record<string, number[]>;
+        bagSizes: Partial<typeof GameConfig["bagSizes"]>;
         bleedDamage: number;
         bleedDamageMult: number;
     };
@@ -195,6 +203,10 @@ export interface MapDef {
                     innerRad: number;
                     outerRad: number;
                     centerObj?: string;
+                    /**
+                     * Disables bushes and rocks from spawning
+                     */
+                    noRiverObjs?: boolean;
                     riverMaskRad?: number;
                     spawnBound: {
                         pos: Vec2;

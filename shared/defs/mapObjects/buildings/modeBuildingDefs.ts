@@ -3282,7 +3282,7 @@ function createReserveBasement(overrides: DeepPartial<BuildingDef>): BuildingDef
                 ori: 0,
             },
             {
-                type: "control_panel_07",
+                type: "control_panel_07de",
                 pos: v2.create(18.5, -23.25),
                 scale: 1,
                 ori: 0,
@@ -6927,7 +6927,12 @@ export const ModeBuildingDefs: Record<string, BuildingDef> = {
                 },
             ],
         },
-        ceiling: { zoomRegions: [], imgs: [] },
+        // HACK: used to define a region that counts as "river town" for quests
+        goreRegion: collider.createAabbExtents(v2.create(0, 10), v2.create(125, 70)),
+        ceiling: {
+            zoomRegions: [],
+            imgs: [],
+        },
         mapObjects: [
             {
                 type: "bridge_xlg_structure_01",

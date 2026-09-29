@@ -12,7 +12,7 @@ import type { ObstacleDef } from "./obstacleDefs.ts";
 function createCrate(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "crate",
+        category: "crate",
         scale: { createMin: 1, createMax: 1, destroy: 0.5 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.25, 2.25)),
         height: 0.5,
@@ -46,7 +46,7 @@ function createCrate(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createCase(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "crate",
+        category: "crate",
         scale: { createMin: 1, createMax: 1, destroy: 0.8 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.25, 1.6)),
         height: 0.5,
@@ -80,7 +80,7 @@ function createCase(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createChest(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "crate",
+        category: "crate",
         scale: { createMin: 1, createMax: 1, destroy: 0.75 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.25, 1.6)),
         height: 0.5,
@@ -124,7 +124,7 @@ function createRiverChest(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 
 function createAirdrop(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: DeepPartial<ObstacleDef> = {
-        obstacleType: "airdrop",
+        category: "airdrop",
         dropCollision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.5, 2.5)),
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.5, 2.5)),
         airdropCrate: true,
@@ -159,7 +159,7 @@ function createAirdrop(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createClassCrate(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "crate",
+        category: "crate",
         scale: { createMin: 1, createMax: 1, destroy: 0.75 },
         collision: collider.createCircle(v2.create(0, 0), 2.1),
         height: 0.5,
@@ -298,6 +298,20 @@ export const CrateDefs: Record<string, ObstacleDef> = {
         ],
         hitParticle: "blackChip",
     }),
+    case_10: createCase({
+        health: 140,
+        img: {
+            sprite: "map-case-cloud-01.img",
+            residue: "map-case-hatchet-res-01.img",
+        },
+        loot: [
+            autoLoot("backpack04_cloud", 1),
+            tierLoot("tier_perks", 1, 1),
+            tierLoot("tier_ammo", 2, 3),
+            tierLoot("tier_medical", 2, 2),
+        ],
+        hitParticle: "blackChip",
+    }),
     chest_01: createChest({
         loot: [
             tierLoot("tier_chest", 3, 4),
@@ -409,7 +423,11 @@ export const CrateDefs: Record<string, ObstacleDef> = {
             tierLoot("tier_packs", 1, 1),
         ],
         map: { display: true, color: 0xcc0000 },
-        terrain: { grass: true, beach: false },
+        terrain: {
+            grass: true,
+            beach: false,
+            minDistanceFromSameType: 32,
+        },
         img: { sprite: "map-crate-02f.img" },
         sound: { explode: "crate_break_01" },
         teamId: 1,
@@ -662,7 +680,7 @@ export const CrateDefs: Record<string, ObstacleDef> = {
         health: 200,
         loot: [
             tierLoot("tier_airdrop_rare", 1, 1),
-            tierLoot("tier_airdrop_armor", 1, 1),
+            autoLoot("backpack04_cloud", 1),
             tierLoot("tier_medical", 2, 2),
             tierLoot("tier_airdrop_scopes", 1, 1),
             tierLoot("tier_airdrop_outfits", 1, 1),
@@ -965,7 +983,11 @@ export const CrateDefs: Record<string, ObstacleDef> = {
             tierLoot("tier_packs", 1, 1),
         ],
         map: { display: true, color: 32511 },
-        terrain: { grass: true, beach: false },
+        terrain: {
+            grass: true,
+            beach: false,
+            minDistanceFromSameType: 32,
+        },
         img: { sprite: "map-crate-22.img" },
         sound: { explode: "crate_break_01" },
         teamId: 2,
@@ -1185,7 +1207,7 @@ export const CrateDefs: Record<string, ObstacleDef> = {
         explodeParticle: "airdropCrate02x",
     }),
     class_shell_01: createAirdrop({
-        obstacleType: undefined,
+        category: undefined,
         terrain: {
             minDistanceFromSameType: 32,
         },

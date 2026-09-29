@@ -11,7 +11,7 @@ import type { ObstacleDef } from "./obstacleDefs.ts";
 function createWoodBarrel(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "barrel",
+        category: "barrel",
         scale: { createMin: 1, createMax: 1, destroy: 0.8 },
         collision: collider.createCircle(v2.create(0, 0), 1.75),
         height: 0.5,
@@ -44,7 +44,7 @@ function createWoodBarrel(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createBed(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: { createMin: 1, createMax: 1, destroy: 0.9 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.8, 3.4)),
         height: 0.5,
@@ -77,7 +77,7 @@ function createBed(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createBookShelf(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: { createMin: 1, createMax: 1, destroy: 0.75 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(3.5, 1)),
         height: 0.5,
@@ -143,7 +143,7 @@ function createControlPanel(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createCouch(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: { createMin: 1, createMax: 1, destroy: 0.85 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(4.5, 1.5)),
         height: 0.5,
@@ -176,7 +176,7 @@ function createCouch(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createDepositBox(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "locker",
+        category: "locker",
         scale: { createMin: 1, createMax: 1, destroy: 1 },
         collision: collider.createAabbExtents(v2.create(0, 0.15), v2.create(2.5, 1)),
         height: 10,
@@ -210,7 +210,7 @@ function createDepositBox(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createDrawer(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: { createMin: 1, createMax: 1, destroy: 0.75 },
         collision: collider.createAabbExtents(v2.create(0, 0.15), v2.create(2.5, 1.25)),
         height: 0.5,
@@ -243,7 +243,7 @@ function createDrawer(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createGunMount(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: { createMin: 1, createMax: 1, destroy: 0.9 },
         collision: collider.createAabbExtents(v2.create(0, 0.2), v2.create(2.25, 0.7)),
         height: 0.5,
@@ -277,7 +277,7 @@ function createGunMount(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createLocker(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "locker",
+        category: "locker",
         scale: { createMin: 1, createMax: 1, destroy: 1 },
         collision: collider.createAabbExtents(v2.create(0, 0.15), v2.create(1.5, 0.6)),
         height: 10,
@@ -311,7 +311,7 @@ function createLocker(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createOven(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: { createMin: 1, createMax: 1, destroy: 0.75 },
         collision: collider.createAabbExtents(v2.create(0, 0.15), v2.create(1.7, 1.3)),
         height: 0.5,
@@ -344,7 +344,7 @@ function createOven(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createPlanter(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "pot",
+        category: "pot",
         scale: { createMin: 1, createMax: 1, destroy: 0.75 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.25, 4.25)),
         height: 0.5,
@@ -377,7 +377,7 @@ function createPlanter(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createBottle(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "pot",
+        category: "pot",
         scale: { createMin: 1, createMax: 1, destroy: 0.8 },
         collision: collider.createCircle(v2.create(0, 0), 1.5),
         height: 0.5,
@@ -509,7 +509,7 @@ function createSink(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createTable(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: { createMin: 1, createMax: 1, destroy: 0.75 },
         collision: collider.createAabbExtents(v2.create(0, 0), v2.create(2.5, 2)),
         height: 0.5,
@@ -542,7 +542,7 @@ function createTable(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createToilet(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "toilet",
+        category: "toilet",
         scale: { createMin: 1, createMax: 1, destroy: 0.8 },
         collision: collider.createCircle(v2.create(0, 0.25), 1.18),
         height: 0.5,
@@ -607,7 +607,7 @@ function createWheel(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
 function createVendingMachine(overrides: DeepPartial<ObstacleDef>): ObstacleDef {
     const baseDef: ObstacleDef = {
         type: "obstacle",
-        obstacleType: "vending",
+        category: "vending",
         scale: {
             createMin: 1,
             createMax: 1,
@@ -1070,7 +1070,7 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
     }),
     screen_01: {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: {
             createMin: 1,
             createMax: 1,
@@ -1105,7 +1105,7 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
     sink_01: createSink({}),
     stand_01: {
         type: "obstacle",
-        obstacleType: "furniture",
+        category: "furniture",
         scale: {
             createMin: 1,
             createMax: 1,
@@ -1139,7 +1139,7 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
     },
     power_box_01: createControlPanel({}),
     stove_01: createControlPanel({
-        obstacleType: "furniture",
+        category: "furniture",
         scale: {
             createMin: 1,
             createMax: 1,
@@ -1160,7 +1160,7 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
         },
     }),
     stove_02: createControlPanel({
-        obstacleType: "furniture",
+        category: "furniture",
         collision: collider.createCircle(v2.create(0, 0), 1.5),
         disableBuildingOccupied: true,
         damageCeiling: true,
@@ -1254,6 +1254,35 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
             zIdx: 60,
         },
     }),
+    // Cloud Bunker tables
+    table_06: createControlPanel({
+        collision: collider.createAabbExtents(v2.create(0, 0), v2.create(4, 2)),
+        destructible: false,
+        img: {
+            sprite: "map-table-06.img",
+        },
+    }),
+    table_07: createControlPanel({
+        collision: collider.createAabbExtents(v2.create(0.05, -0.1), v2.create(3.35, 1.25)),
+        destructible: false,
+        img: {
+            sprite: "map-table-07.img",
+        },
+    }),
+    table_08: createControlPanel({
+        collision: collider.createAabbExtents(v2.create(0, -0.05), v2.create(4, 1.5)),
+        destructible: false,
+        img: {
+            sprite: "map-table-08.img",
+        },
+    }),
+    table_09: createControlPanel({
+        collision: collider.createAabbExtents(v2.create(0, -0.05), v2.create(3, 2)),
+        destructible: false,
+        img: {
+            sprite: "map-table-09.img",
+        },
+    }),
     toilet_01: createToilet({
         img: { sprite: "map-toilet-01.img" },
         loot: [tierLoot("tier_toilet", 2, 3)],
@@ -1343,7 +1372,7 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
         terrain: { grass: false, beach: false },
         img: {
             sprite: "map-vat-01.img",
-            residue: "map-vat-res.img",
+            residue: "map-vat-res-01.img",
             scale: 0.5,
             alpha: 1,
             tint: 0xffffff,
@@ -1376,7 +1405,7 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
         terrain: { grass: true, beach: false },
         img: {
             sprite: "map-vat-02.img",
-            residue: "map-vat-res.img",
+            residue: "map-vat-res-01.img",
             scale: 0.5,
             alpha: 1,
             tint: 0xffffff,
@@ -1405,7 +1434,7 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
         terrain: { grass: false, beach: false },
         img: {
             sprite: "map-vat-03.img",
-            residue: "map-vat-res.img",
+            residue: "map-vat-res-01.img",
             scale: 0.5,
             alpha: 1,
             tint: 0xffffff,
@@ -1431,6 +1460,64 @@ export const FurnitureDefs: Record<string, ObstacleDef> = {
                 on: "",
                 off: "",
             },
+        },
+    },
+    vat_04: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-04.img",
+            residue: "map-vat-res-02.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
+        },
+    },
+    vat_05: {
+        type: "obstacle",
+        scale: { createMin: 1, createMax: 1, destroy: 0.9 },
+        collision: collider.createCircle(v2.create(0, 0), 2),
+        height: 0.5,
+        collidable: true,
+        destructible: true,
+        health: 250,
+        reflectBullets: false,
+        hitParticle: "glassChip",
+        explodeParticle: "windowBreak",
+        loot: [],
+        map: { display: true, color: 0xb3b3b3, scale: 1 },
+        terrain: { grass: false, beach: false },
+        img: {
+            sprite: "map-vat-05.img",
+            residue: "map-vat-res-02.img",
+            scale: 0.5,
+            alpha: 1,
+            tint: 0xffffff,
+            zIdx: 10,
+        },
+        sound: {
+            bullet: "glass_bullet",
+            punch: "glass_bullet",
+            explode: "window_break_01",
+            enter: "none",
         },
     },
     vending_01: createVendingMachine({}),

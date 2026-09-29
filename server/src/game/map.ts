@@ -207,7 +207,12 @@ export class GameMap {
     seed!: number;
     msg!: net.MapMsg;
     terrain!: ReturnType<typeof generateTerrain>;
-    riverDescs!: MapRiverData[];
+    riverDescs!: Array<
+        MapRiverData & {
+            noRiverObjs: boolean;
+            aabb?: AABB;
+        }
+    >;
     riverMasks!: Array<Collider>;
     normalRivers!: Array<River & { looped: false }>;
     lakes!: Array<River & { looped: true }>;
@@ -713,6 +718,7 @@ export class GameMap {
                     width: widths[i],
                     points: riverPoints,
                     looped: false,
+                    noRiverObjs: false,
                 });
                 return true;
             });
@@ -1065,11 +1071,12 @@ export class GameMap {
                 stone_03: 0.9,
                 bush_04: 0.4,
             };
-            for (const river of this.terrain.rivers) {
+            for (let i = 0; i < this.terrain.rivers.length; i++) {
+                const river = this.terrain.rivers[i];
+                const desc = this.riverDescs[i];
+                if (desc.noRiverObjs) continue;
                 const riverArea = this.riverAreas.get(river)!.water / 1000;
 
-                // HACK: desert lake shouldn't spawn stones and bushes
-                if (river.looped && this.desertMode) continue;
                 for (const type in riverObjs) {
                     const amount = math.min(riverArea * riverObjs[type], 30);
 
@@ -2012,30 +2019,8 @@ export class GameMap {
             if (obj) building.childObjects.push(obj);
         }
 
-        for (const patch of def.mapGroundPatches ?? []) {
-            if (patch.bound.type === collider.Type.Circle) {
-                const worldCenter = math.addAdjust(pos, patch.bound.pos, ori);
-                this.msg.groundPatches.push({
-                    bound: collider.createCircle(worldCenter, patch.bound.rad),
-                    color: patch.color,
-                    roughness: patch.roughness ?? 0,
-                    offsetDist: patch.offsetDist ?? 0,
-                    order: patch.order ?? 0,
-                    useAsMapShape: patch.useAsMapShape ?? true,
-                });
-            } else {
-                this.msg.groundPatches.push({
-                    bound: collider.createAabb(
-                        math.addAdjust(pos, patch.bound.min, ori),
-                        math.addAdjust(pos, patch.bound.max, ori),
-                    ),
-                    color: patch.color,
-                    roughness: patch.roughness ?? 0,
-                    offsetDist: patch.offsetDist ?? 0,
-                    order: patch.order ?? 0,
-                    useAsMapShape: patch.useAsMapShape ?? true,
-                });
-            }
+        if (building.groundPatches !== undefined) {
+            this.msg.groundPatches.push(...building.groundPatches);
         }
 
         this.addBounds(building, !!parentId);
@@ -2054,7 +2039,7 @@ export class GameMap {
 
         ori = ori ?? def.ori ?? util.randomInt(0, 3);
 
-        const structure = new Structure(this.game, type, pos, layer, ori);
+        const structure = new Structure(this.game, type, pos, layer, ori, parentId);
         this.game.objectRegister.register(structure);
         this.structures.push(structure);
 
