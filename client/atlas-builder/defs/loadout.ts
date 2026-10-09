@@ -498,6 +498,12 @@ export const LoadoutAtlas: AtlasDef = {
         "loot/loot-throwable-snowball.svg",
         "loot/loot-throwable-strobe.svg",
         "loot/loot-throwable-tomato.svg",
+        //cooolmod
+        "loot/loot-weapon-g36c.svg",
+        "loot/loot-weapon-sl8.svg",
+        "guns/gun-g36c-01.svg",
+        "guns/gun-sl8-01.svg",
+        
         "loot/loot-weapon-ash12.svg",
         "loot/loot-weapon-ak.svg",
         "loot/loot-weapon-an94.svg",
