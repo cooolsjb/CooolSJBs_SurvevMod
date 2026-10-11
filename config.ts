@@ -31,9 +31,9 @@ export function getConfig(isProduction: boolean, dir: string) {
         regions: {},
         proxies: {},
         modes: [
-            { mapName: "main", teamMode: TeamMode.Solo, enabled: true },
-            { mapName: "desert", teamMode: TeamMode.Duo, enabled: true },
-            { mapName: "faction_potato", teamMode: TeamMode.Squad, enabled: true },
+            { mapName: "savannah", teamMode: TeamMode.Duo, enabled: true },
+            { mapName: "main", teamMode: TeamMode.Duo, enabled: true },
+            { mapName: "main", teamMode: TeamMode.Duo, enabled: true },
         ],
         clientTheme: "main",
         passType: "pass_survivr2",

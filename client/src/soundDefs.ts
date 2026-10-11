@@ -24,6 +24,11 @@ export interface ReverbDef {
 
 const Sounds: Record<string, Record<string, SoundDef>> = {
     players: {
+        g36c_01: {
+            path: "audio/guns/g36c_01.mp3",
+            volume: 1,
+            maxInstances: 5,
+        },
         m9_01: {
             path: "audio/guns/m9_01.mp3",
             volume: 1,

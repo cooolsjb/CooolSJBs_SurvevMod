@@ -396,6 +396,8 @@
   "game-flare-tooltip": "Ammo for Flare Gun.",
   "game-45acp": ".45 ACP",
   "game-45acp-tooltip": "Ammo for M1911, M1A1, Peacemaker, Model 94, Vector and Mk45G.",
+  "game-40mm": "40mm Grenade",
+  "game-40mm-tooltip": "Ammo for M79, Milkor MGL, M320.",
   "game-chest01": "Level 1 Vest",
   "game-chest02": "Level 2 Vest",
   "game-chest03": "Level 3 Vest",
