@@ -23,6 +23,19 @@ export interface BulletDef {
 }
 
 export const BaseDefs: Record<string, BulletDef> = {
+    bullet_ar50: {
+        type: "bullet",
+        damage: 230,
+        obstacleDamage: 3,
+        falloff: 0.9,
+        distance: 500,
+        speed: 250,
+        variance: 0,
+        shrapnel: false,
+        tracerColor: "50AE",
+        tracerWidth: 0.225,
+        tracerLength: 1.5,
+    },
     bullet_g36c: {
         type: "bullet",
         damage: 10,
