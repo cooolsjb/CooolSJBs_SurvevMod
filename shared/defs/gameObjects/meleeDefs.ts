@@ -1153,6 +1153,11 @@ const BaseDefs: Record<string, MeleeDef> = {
 };
 
 const SkinDefs: Record<string, MeleeDef> = {
+    naginata_glory: defineMeleeSkin("naginata", {
+        name: "Naginata Glory",
+        lootImg: { sprite: "loot-melee-naginata-glory.img" },
+        worldImg: { sprite: "loot-melee-naginata-glory.img" },
+    }),
     fists: defineMeleeSkin("fists", {
         name: "Fists",
         rarity: Rarity.Stock,

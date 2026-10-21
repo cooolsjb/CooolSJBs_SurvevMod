@@ -130,6 +130,18 @@ const mapDef: PartialMapDef = {
         },
     },
     lootTable: {
+        tier_eye_block: [
+            { name: "ar50", count: 1, weight: 1 },
+            { name: "ots38_dual", count: 1, weight: 1 },
+            { name: "flare_gun", count: 1, weight: 1 },
+            { name: "colt45", count: 1, weight: 1 },
+            { name: "45acp", count: 1, weight: 1 },
+            { name: "painkiller", count: 1, weight: 1 },
+            { name: "m4a1", count: 1, weight: 1 },
+            { name: "m249", count: 1, weight: 1 },
+            { name: "awc", count: 1, weight: 1 },
+            { name: "pkp", count: 1, weight: 1 },
+        ],
         tier_throwables: [
             { name: "frag", count: 2, weight: 0.5 },
             { name: "smoke", count: 1, weight: 1 },
