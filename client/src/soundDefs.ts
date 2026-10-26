@@ -23,7 +23,27 @@ export interface ReverbDef {
 }
 
 const Sounds: Record<string, Record<string, SoundDef>> = {
-    players: {
+    players: {   
+        ar15_01: {
+            path: "audio/guns/ar15_01.mp3",
+            volume: 1,
+            maxInstances: 5,
+        },
+        ar15_reload_01: {
+            path: "audio/guns/ar15_reload_01.mp3",
+            volume: 1,
+            maxInstances: 5,
+        },
+        ar15_switch_01: {
+            path: "audio/guns/ar15_switch_01.mp3",
+            volume: 1,
+            maxInstances: 5,
+        },
+        shak12_01: {
+            path: "audio/guns/shak12_01.mp3",
+            volume: 1,
+            maxInstances: 5,
+        },    
         ump45_01: {
             path: "audio/guns/ump45_01.mp3",
             volume: 1,
