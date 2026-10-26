@@ -1158,6 +1158,53 @@ const SkinDefs: Record<string, MeleeDef> = {
         lootImg: { sprite: "loot-melee-naginata-glory.img" },
         worldImg: { sprite: "loot-melee-naginata-glory.img" },
     }),
+    kukri_rust: defineMeleeSkin("machete", {
+        name: "Kukri Rust",
+        autoAttack: true,
+        noPotatoSwap: false,
+        damage: 24,
+        attack: {
+            cooldownTime: 0.2
+        },
+        lootImg: { sprite: "loot-melee-kukri-rust.img" },
+        worldImg: {
+            sprite: "loot-melee-kukri-rust.img",
+            pos: { x: -0.5, y: -46.5 },
+        },
+    }),
+    machete_rust: defineMeleeSkin("machete", {
+        name: "UVSR Taiga",
+        autoAttack: true,
+        noPotatoSwap: false,
+        damage: 24,
+        attack: {
+            cooldownTime: 0.2
+        },
+        lootImg: { sprite: "loot-melee-machete-rust.img" },
+        worldImg: {
+            sprite: "loot-melee-machete-rust.img",
+        },
+    }),
+    spade_gardening: defineMeleeSkin("spade", {
+        name: "Gardening Spade",
+        noPotatoSwap: false,
+        lootImg: { sprite: "loot-melee-spade.img" },
+        worldImg: {
+            sprite: "loot-melee-spade.img",
+            pos: { x: -0.5, y: -46.5 },
+        },
+    }),
+    // added from suggestion by John Survev in discord server
+    kukri: defineMeleeSkin("machete", {
+        name: "Kukri",
+        noPotatoSwap: false,
+        lootImg: { sprite: "loot-melee-kukri.img" },
+        worldImg: {
+            sprite: "loot-melee-kukri.img",
+            pos: { x: -0.5, y: -46.5 },
+        },
+    }),
+    // added from suggestion by John Survev in discord server
     fists: defineMeleeSkin("fists", {
         name: "Fists",
         rarity: Rarity.Stock,
@@ -1321,39 +1368,12 @@ const SkinDefs: Record<string, MeleeDef> = {
             sprite: "loot-melee-machete-taiga.img",
         },
     }),
-    machete_rust: defineMeleeSkin("machete", {
-        name: "UVSR Taiga",
-        autoAttack: true,
-        noPotatoSwap: false,
-        damage: 24,
-        attack: {
-            cooldownTime: 0.2
-        },
-        lootImg: { sprite: "loot-melee-machete-rust.img" },
-        worldImg: {
-            sprite: "loot-melee-machete-rust.img",
-        },
-    }),
     kukri_trad: defineMeleeSkin("machete", {
         name: "Tallow's Kukri",
         noPotatoSwap: false,
         lootImg: { sprite: "loot-melee-kukri-trad.img" },
         worldImg: {
             sprite: "loot-melee-kukri-trad.img",
-            pos: { x: -0.5, y: -46.5 },
-        },
-    }),
-    kukri_rust: defineMeleeSkin("machete", {
-        name: "Kukri Rust",
-        autoAttack: true,
-        noPotatoSwap: false,
-        damage: 24,
-        attack: {
-            cooldownTime: 0.2
-        },
-        lootImg: { sprite: "loot-melee-kukri-rust.img" },
-        worldImg: {
-            sprite: "loot-melee-kukri-rust.img",
             pos: { x: -0.5, y: -46.5 },
         },
     }),
