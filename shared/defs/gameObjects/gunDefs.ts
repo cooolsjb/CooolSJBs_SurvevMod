@@ -95,6 +95,58 @@ function defineGunSkin(baseType: string, params: DeepPartial<GunDef>): GunDef {
 }
 
 export const BaseDefs: Record<string, GunDef> = {
+    ar15: {
+        name: "AR-15 .50",
+        type: "gun",
+        quality: 1,
+        fireMode: "auto",
+        caseTiming: "shoot",
+        ammo: "50AE",
+        ammoSpawnCount: 40,
+        maxClip: 10,
+        maxReload: 10,
+        extendedClip: 15,
+        extendedReload: 15,
+        reloadTime: 2.5,
+        fireDelay: 0.2,
+        switchDelay: 0.55,
+        barrelLength: 3.35,
+        barrelOffset: 0,
+        recoilTime: 1e10,
+        moveSpread: 6,
+        shotSpread: 1,
+        bulletCount: 1,
+        bulletType: "bullet_ar15",
+        headshotMult: 1.5,
+        speed: { equip: -1, attack: 0 },
+        lootImg: {
+            sprite: "loot-weapon-ar15.img",
+            tint: 0xff00,
+            border: "loot-circle-outer-01.img",
+            borderTint: 0,
+            scale: 0.3,
+        },
+        worldImg: {
+            sprite: "gun-long-01.img",
+            scale: { x: 0.5, y: 0.45 },
+            tint: 0x333333,
+            leftHandOffset: { x: 2.8, y: 0 },
+            recoil: 1.66,
+        },
+        particle: {
+            shellScale: 1,
+            shellOffset: 0.375,
+            casing: "50cal",
+        },
+        sound: {
+            shoot: "ar15_01",
+            reload: "ar15_reload_01",
+            pickup: "gun_pickup_01",
+            empty: "empty_fire_01",
+            deploy: "ar15_switch_01",
+        },
+    },
+    // added from suggestion by Light Mode Glazer in discord server
     ump45: {
         name: "UMP45",
         type: "gun",
