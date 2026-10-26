@@ -617,6 +617,8 @@
   "game-ar50": "AR-50",
   "game-ump45": "UMP45-S",
   "game-ar15": "AR-15 50",
+  "game-ak12": "AK-12",
+  "game-sg550": "SG-550",
   "game-shak12": "ShAK-12 SD",
   "game-bowie_blood": "Bowie Bloodthirsty",
   "game-hud-bowie_blood": "Bowie",
@@ -626,6 +628,9 @@
   "game-hud-machete_rust": "Machete",
   "game-kukri_rust": "Kukri Rust",
   "game-hud-kukri_rust": "Kukri",
+  "game-hud-kukri": "Kukri",
+  "game-spade_gardening": "Gardening Spade",
+  "game-hud-spade_gardening": "Spade",
 
   "game-ak47": "AK-47",
   "game-scar": "SCAR-H",
